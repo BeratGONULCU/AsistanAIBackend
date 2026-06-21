@@ -1,0 +1,53 @@
+# ==========================================
+# GeminiAsistanBackend .gitignore
+# ==========================================
+
+# 1. build
+# Katmanlardaki bin ve obj klasörlerini tamamen engeller
+[Dd]ebug/
+[Rr]elease/
+**/bin/
+**/obj/
+
+# 2. IDE ve Editör Dosyalarý 
+.vs/
+.idea/
+.vscode/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+*.vshost.*
+*.vshost.*.manifest
+
+# 3. Loglar (Logs)
+*.log
+logs/
+[Ll]og/
+
+# 4. (Environment )
+.env
+.env.*
+# Ana appsettings.json ve example.json GÝDECEK, aþaðýdakiler ENGELLENECEK:
+appsettings.Development.json
+appsettings.Local.json
+appsettings.Production.json
+
+# 5.  (Database Local)
+*.db
+*.sqlite
+*.sqlite3
+
+# 6. (Test Results)
+[Tt]est[Rr]esults/
+coverage/
+*.trx
+
+# 7. (OS Files)
+.DS_Store
+Thumbs.db
+ehthumbs.db
+
+*.tmp
+*.bak
+*.backup

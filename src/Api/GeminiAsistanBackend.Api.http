@@ -1,0 +1,45 @@
+@GeminiAsistanBackend.Api_HostAddress = http://localhost:5131
+
+GET {{GeminiAsistanBackend.Api_HostAddress}}/api/todos
+Accept: application/json
+
+###
+
+GET {{GeminiAsistanBackend.Api_HostAddress}}/api/todos/incomplete
+Accept: application/json
+
+###
+
+POST {{GeminiAsistanBackend.Api_HostAddress}}/api/todos
+Content-Type: application/json
+
+{
+  "title": "Read clean architecture",
+  "description": "Study layered design principles.",
+  "dueDate": "2025-12-31"
+}
+
+###
+
+# @todoId = PUT created ID here
+
+GET {{GeminiAsistanBackend.Api_HostAddress}}/api/todos/{{todoId}}
+Accept: application/json
+
+###
+
+PUT {{GeminiAsistanBackend.Api_HostAddress}}/api/todos/{{todoId}}
+Content-Type: application/json
+
+{
+  "title": "Read clean architecture (updated)",
+  "description": "Update description sample.",
+  "dueDate": "2026-01-15",
+  "markCompleted": true
+}
+
+###
+
+DELETE {{GeminiAsistanBackend.Api_HostAddress}}/api/todos/{{todoId}}
+
+###
