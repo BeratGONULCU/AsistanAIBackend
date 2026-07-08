@@ -7,6 +7,6 @@ public interface IEgitimDatasetSyncService
 {
     Task<List<CreateEgitimDatasetRequest>> GetMissingItemsAsync(CancellationToken cancellationToken);
     Task<List<EgitimDatasetResponse>> SyncAsync(CancellationToken cancellationToken);
-    Task ExportEgitimDatasetToExcelAsync(CancellationToken cancellationToken);
+    Task ExportEgitimDatasetToExcelAsync(string FilePath,CancellationToken cancellationToken);
     Task<string> GetExcelPath(CancellationToken cancellationToken);
 }

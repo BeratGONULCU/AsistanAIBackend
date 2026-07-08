@@ -14,6 +14,8 @@ public class SesTetikleyiciResponse
     // public int KomutId { get; set; }
     public EklenmeTuru? EklenmeTuru { get; set; }
     public double? llmConfidenceScore { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public DateTime LastUpdatedAt { get; set; }
 }
 
 /*

@@ -3,6 +3,7 @@ using GeminiAsistanBackend.Application.Interfaces.Repositories;
 using GeminiAsistanBackend.Domain.Entities;
 using GeminiAsistanBackend.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore.Storage;
+using Microsoft.Extensions.Logging;
 
 namespace GeminiAsistanBackend.Infrastructure.Persistence;
 
@@ -12,30 +13,41 @@ public sealed class UnitOfWork : IUnitOfWork
     private IDbContextTransaction? _currentTransaction;
 
     private IGenericRepository<CihazKomutu>? _cihazKomutlari;
-    private IGenericRepository<IslemLog>? _islemLoglari;
-    private IGenericRepository<SesTetikleyicisi>? _sesTetikleyicileri;
+    private IIslemLogRepository _islemLoglari;
+    private ISesTetikleyiciRepository _sesTetikleyicileri;
     private IGenericRepository<TetikleyiciKomut>? _tetikleyiciKomutlar;
     private IGenericRepository<EgitimDataset>? _egitimDataset;
+    private ICihazKomutuRepository _cihazKomutu;
+    private IGenericRepository<AsistanYanit> _asistanYanitlar;
 
-    public UnitOfWork(AppDbContext context)
+    private readonly ILogger<SesTetikleyiciRepository> _sesTetikleyiciLogger;
+
+    public UnitOfWork(AppDbContext context, ILogger<SesTetikleyiciRepository> sesTetikleyiciLogger)
     {
         _context = context;
+        _sesTetikleyiciLogger = sesTetikleyiciLogger;
     }
 
     public IGenericRepository<CihazKomutu> CihazKomutlari =>
         _cihazKomutlari ??= new GenericRepository<CihazKomutu>(_context);
 
-    public IGenericRepository<IslemLog> IslemLoglari =>
-        _islemLoglari ??= new GenericRepository<IslemLog>(_context);
+    public ICihazKomutuRepository CihazKomutu => 
+        _cihazKomutu  ??= new CihazKomutuRepository(_context);
+    
+    public IIslemLogRepository IslemLoglari => 
+        _islemLoglari ??= new IslemLogRepository(_context);
 
-    public IGenericRepository<SesTetikleyicisi> SesTetikleyicileri =>
-        _sesTetikleyicileri ??= new GenericRepository<SesTetikleyicisi>(_context);
+    public ISesTetikleyiciRepository SesTetikleyicileri =>
+        _sesTetikleyicileri ??= new SesTetikleyiciRepository(_context,_sesTetikleyiciLogger);
 
     public IGenericRepository<TetikleyiciKomut> TetikleyiciKomutlar =>
         _tetikleyiciKomutlar ??= new GenericRepository<TetikleyiciKomut>(_context);
 
     public IGenericRepository<EgitimDataset> EgitimDataset => 
         _egitimDataset ??= new GenericRepository<EgitimDataset>(_context);
+
+    public IGenericRepository<AsistanYanit> AsistanYanit =>
+        _asistanYanitlar ??= new GenericRepository<AsistanYanit>(_context);
 
     public Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {

@@ -3,5 +3,6 @@
 public enum EklenmeTuru
 {
     MANUEL,
-    AI_LEARNED
+    AI_LEARNED,
+    REDMINE
 }

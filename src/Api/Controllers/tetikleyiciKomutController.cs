@@ -1,12 +1,13 @@
-﻿using MediatR;
-using GeminiAsistanBackend.Application;
-using GeminiAsistanBackend.Application.DTOs;
-using GeminiAsistanBackend.Domain.Entities;
-using Microsoft.AspNetCore.Mvc;
-using GeminiAsistanBackend.Application.DTOs.CihazKomut;
-using GeminiAsistanBackend.Application.Queries;
+﻿using GeminiAsistanBackend.Application;
 using GeminiAsistanBackend.Application.Commands;
+using GeminiAsistanBackend.Application.DTOs;
+using GeminiAsistanBackend.Application.DTOs.CihazKomut;
 using GeminiAsistanBackend.Application.DTOs.TetikleyiciKomutlar;
+using GeminiAsistanBackend.Application.Features.Commands.TetikleyiciKomutCommands;
+using GeminiAsistanBackend.Application.Features.Queries;
+using GeminiAsistanBackend.Domain.Entities;
+using MediatR;
+using Microsoft.AspNetCore.Mvc;
 
 namespace GeminiAsistanBackend.Api.Controllers;
 
@@ -21,7 +22,7 @@ public sealed class tetikleyiciKomutController : ControllerBase
         _mediator = mediator;
     }
 
-    [HttpPost]
+    [HttpPost("Create")]
     public async Task<ActionResult<TetikleyiciKomutReponse>> Create([FromBody] CreateTetikleyiciKomutRequest request,CancellationToken cancellationToken)
     {
         var command = new CreateTetikleyiciKomutCommand(

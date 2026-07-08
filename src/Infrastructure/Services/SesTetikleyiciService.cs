@@ -1,4 +1,5 @@
-﻿using GeminiAsistanBackend.Application.DTOs.SesTetikleyici;
+﻿using DocumentFormat.OpenXml.Drawing.Charts;
+using GeminiAsistanBackend.Application.DTOs.SesTetikleyici;
 using GeminiAsistanBackend.Application.Interfaces.Repositories;
 using GeminiAsistanBackend.Application.Interfaces.SesTetikleyici;
 using GeminiAsistanBackend.Domain.Enums;
@@ -46,6 +47,18 @@ public class SesTetikleyiciService : ISesTetikleyiciService
         return entities.Select(MapToResponse).ToList();
     }
 
+    public async Task<bool> CountSesTetikleyicileri(CancellationToken cancellationToken)
+    {
+        // bu method eğer ki ses tetikleyicileri içerisinde eklenmeturu = REDMINE olan kayıtlar 10'u geçtiyse kontrol edecek.
+       var count = await _context.SesTetikleyicileri
+            .AsNoTracking()
+            .CountAsync(x => x.EklenmeTuru == EklenmeTuru.REDMINE, cancellationToken);
+
+        if (count >= 15)
+            return true;
+        return false;
+    }
+
     public static SesTetikleyiciResponse MapToResponse(Domain.Entities.SesTetikleyicisi x)
     {
         return new SesTetikleyiciResponse
@@ -55,4 +68,5 @@ public class SesTetikleyiciService : ISesTetikleyiciService
             EklenmeTuru = x.EklenmeTuru
         };
     }
+
 }

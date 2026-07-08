@@ -1,10 +1,11 @@
 ﻿using GeminiAsistanBackend.Application.Features.Commands;
+using GeminiAsistanBackend.Application.Features.Commands.AICommands;
 using MediatR;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 
 namespace GeminiAsistanBackend.WebAPI.Controllers;
 
@@ -46,7 +47,9 @@ public class AiChainController : ControllerBase
         return BadRequest(new { Success = false, Message = "Komut zinciri kaydedilirken bir hata oluştu." });
     }
 
-    [HttpPost("import-excel")]
+    // Bu method seçilen excel dosyasını veritabanına kaydetmek için yazıldı.
+    // ExcelWriteDataCommand içerisine dosyanın stream nesnesini, dosya adını, dosya boyutunu gönderiyoruz.
+    [HttpPost("import-excel")] 
     public async Task<IActionResult> ImportExcel(IFormFile file, CancellationToken cancellationToken)
     {
         if (file == null || file.Length == 0) return BadRequest("Dosya seçilmedi.");
@@ -54,6 +57,7 @@ public class AiChainController : ControllerBase
         // Dosyayı API katmanında stream'e çevirip Application katmanına öyle fırlatıyoruz
         using var stream = file.OpenReadStream();
 
+        // burada örnek excel dosya yolu : "C:\Users\berat\Desktop\datasets\voice_intent_dataset_numeric_package\test.xlsx"
         var result = await _mediator.Send(new ExcelWriteDataCommand(stream,file.FileName,file.Length), cancellationToken);
 
         if (result) return Ok("Başarılı");

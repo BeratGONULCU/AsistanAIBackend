@@ -2,6 +2,8 @@ using FluentValidation.AspNetCore;
 using GeminiAsistanBackend.Api.Middleware;
 using GeminiAsistanBackend.Application.DependencyInjection;
 using GeminiAsistanBackend.Application.Interfaces;
+using GeminiAsistanBackend.Application.Interfaces.Python;
+using GeminiAsistanBackend.Application.Interfaces.RedMineTask;
 using GeminiAsistanBackend.Application.Interfaces.SesTetikleyici;
 using GeminiAsistanBackend.Application.Services;
 using GeminiAsistanBackend.Infrastructure;
@@ -19,6 +21,8 @@ builder.Services
 builder.Services.AddScoped<ISesTetikleyiciService, SesTetikleyiciService>();
 builder.Services.AddScoped<IEgitimDatasetSyncService, EgitimDatasetSyncService>();
 builder.Services.AddScoped<IApplicationDbContext>(provider => provider.GetRequiredService<AppDbContext>());
+builder.Services.AddScoped<IPythonService, PythonService>();
+builder.Services.AddScoped<IPythonRunService, PythonRunService>();
 
 builder.Services
     .AddControllers()
@@ -64,9 +68,27 @@ builder.Services
         };
     });
 
+builder.Services.AddHttpClient("PythonInputServer", client =>
+{
+    client.BaseAddress = new Uri("http://127.0.0.1:8766/");
+    client.Timeout = TimeSpan.FromSeconds(180);
+});
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("ReactCors", policy =>
+    {
+        policy
+            .WithOrigins("http://localhost:5173")
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+    });
+});
+
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddHttpClient<IRedmineService,RedmineService>();
 
 var app = builder.Build();
 
@@ -79,6 +101,8 @@ if (app.Environment.IsDevelopment())
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 app.UseHttpsRedirection();
+
+app.UseCors("ReactCors");
 
 app.MapControllers();
 

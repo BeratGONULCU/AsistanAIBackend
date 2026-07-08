@@ -5,8 +5,12 @@ using GeminiAsistanBackend.Application.DTOs.CihazKomut;
 using GeminiAsistanBackend.Application.DTOs.EgitimDataset;
 using GeminiAsistanBackend.Application.DTOs.SesTetikleyici;
 using GeminiAsistanBackend.Application.Features.Commands;
+using GeminiAsistanBackend.Application.Features.Commands.EgitimDataSet;
 using GeminiAsistanBackend.Application.Features.Queries;
-using GeminiAsistanBackend.Application.Queries;
+using GeminiAsistanBackend.Application.Features.Queries.CihazKomutlariQueiries;
+using GeminiAsistanBackend.Application.Features.Queries.EgitimDatasetQueries;
+using GeminiAsistanBackend.Application.Features.Queries.SesTetikleyicileriQueries;
+using GeminiAsistanBackend.Application.Features.Queries.TetikleyiciKomutQueries;
 using GeminiAsistanBackend.Application.Services;
 using GeminiAsistanBackend.Domain.Entities;
 using MediatR;
@@ -46,7 +50,7 @@ public sealed class EgitimDatasetController : ControllerBase
     // şuanda sync edilecek veriler geldi , bu verileri bulk command ile toplu insert olacak.
 
 
-    [HttpPost("setSync")]
+    [HttpPost("sync")]
     public async Task<ActionResult> DatasetSync(CancellationToken cancellationToken)
     {
         var resultSesTetikleyici = await _mediator.Send(new GetAllSesTetikleyicileriQuery(),cancellationToken);
@@ -56,7 +60,7 @@ public sealed class EgitimDatasetController : ControllerBase
 
     // NOT: Burada sync yapılacak ama yapmadan önce bir kontrol olması gerek. egitim_dataset.sesTetikleyici_id değerleri ile ses_tetikleyicileri.id değerleri birebir aynı mı?
     // üstteki adımda gelen sonuca göre de sync yapılabilir.
-    [HttpGet("sync")]
+    [HttpGet("synced-data")]
     public async Task<ActionResult> GetSyncData(CancellationToken cancellationToken)
     {
         var SesTetikleyiciMetinler = await _mediator.Send(
@@ -202,40 +206,41 @@ public sealed class EgitimDatasetController : ControllerBase
     }
   
     // burada gelen id değerine göre tetikleyici_komut içerisindeki komut_id değerini de alıcaz.
-    [HttpGet]
-    [ProducesResponseType(typeof(List<SesTetikleyiciResponse>), StatusCodes.Status200OK)]
+    [HttpGet("Get-all-egitimdataset")]
+    [ProducesResponseType(typeof(List<EgitimDatasetResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<List<EgitimDatasetResponse>>> GetAllSesTetikleyici(CancellationToken cancellationToken)
+    public async Task<ActionResult<List<EgitimDatasetResponse>>> GetAllEgitimDataset(CancellationToken cancellationToken)
     {
-        var resultSesTetikleyici = await _mediator.Send(new GetAllSesTetikleyicileriQuery(), cancellationToken);
+        var result = await _mediator.Send(new GetAllEgitimDatasetQuery(), cancellationToken);
 
-        if(resultSesTetikleyici is null || !resultSesTetikleyici.Any()) // liste var mı ve boş mu
+        if(result is null || !result.Any()) // liste var mı ve boş mu
         {
             return NotFound("liste içerisinde herhangi bir bulunamadı.");
         }
 
-        return Ok(resultSesTetikleyici);
+        return Ok(result);
     }
 
-    [HttpGet("export")]
+    [HttpGet("exportExcel")]
     public async Task<IActionResult> ExportExcel(CancellationToken cancellationToken)
     {
-        await _syncService.ExportEgitimDatasetToExcelAsync(cancellationToken);
+        var directory = Path.Combine(Directory.GetCurrentDirectory(), "exports");
+        var filename = $"export_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx";
+        var fullPath = Path.Combine(directory, filename);
+
+        await _syncService.ExportEgitimDatasetToExcelAsync(fullPath, cancellationToken);
         return Ok("Excel oluşturuldu.");
     }
 
     [HttpGet("get-excel-path")]
     public async Task<IActionResult> GetExcelPath(CancellationToken cancellationToken)
     {
-        var filePath = await _syncService.GetExcelPath(cancellationToken);
+        var stream = await _syncService.GetExcelPath(cancellationToken);
 
-        if (string.IsNullOrWhiteSpace(filePath))
-            return NotFound("Excel oluşturulamadı.");
-
-        return Ok(filePath);
+        return Ok(stream);
     }
 
-    [HttpPost("sync")]
+    [HttpPost("setSync")]
     public async Task<IActionResult> Sync(CancellationToken cancellationToken)
     {
         var result = await _syncService.SyncAsync(cancellationToken);

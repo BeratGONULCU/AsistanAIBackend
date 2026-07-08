@@ -22,6 +22,57 @@ namespace GeminiAsistanBackend.Infrastructure.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("GeminiAsistanBackend.Domain.Entities.AsistanYanit", b =>
+                {
+                    b.Property<int>("id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("id"));
+
+                    b.Property<int>("SessionId")
+                        .HasColumnType("integer")
+                        .HasColumnName("session_id");
+
+                    b.Property<string>("asistan_yanit")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("asistan_yanit");
+
+                    b.Property<int?>("cihaz_komut_id")
+                        .HasColumnType("integer")
+                        .HasColumnName("cihaz_komut_id");
+
+                    b.Property<DateTime>("created_at")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<string>("feedback")
+                        .HasColumnType("varchar(255)")
+                        .HasColumnName("feedback");
+
+                    b.Property<DateTime>("updated_at")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<string>("yanitTuru")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("yanit_turu");
+
+                    b.HasKey("id");
+
+                    b.HasIndex("cihaz_komut_id");
+
+                    b.ToTable("asistan_yanit", (string)null);
+                });
+
             modelBuilder.Entity("GeminiAsistanBackend.Domain.Entities.CihazKomutu", b =>
                 {
                     b.Property<int>("Id")
@@ -136,6 +187,37 @@ namespace GeminiAsistanBackend.Infrastructure.Migrations
                     b.ToTable("islem_loglari", (string)null);
                 });
 
+            modelBuilder.Entity("GeminiAsistanBackend.Domain.Entities.RedmineEgitimDataset", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("action")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("action");
+
+                    b.Property<string>("redmine_tetikleyici_metin")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("redmine_tetikleyici_metin");
+
+                    b.Property<int>("sesTetikleyici_id")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("redmine_tetikleyici_metin")
+                        .IsUnique();
+
+                    b.HasIndex("sesTetikleyici_id");
+
+                    b.ToTable("redmine_egitim_dataset", (string)null);
+                });
+
             modelBuilder.Entity("GeminiAsistanBackend.Domain.Entities.SesTetikleyicisi", b =>
                 {
                     b.Property<int>("Id")
@@ -155,9 +237,21 @@ namespace GeminiAsistanBackend.Infrastructure.Migrations
                         .HasColumnType("character varying(500)")
                         .HasColumnName("tetikleyici_metin");
 
+                    b.Property<DateTime>("created_at")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
                     b.Property<double?>("llm_confidence_score")
                         .HasColumnType("double precision")
                         .HasColumnName("llm_confidence_score");
+
+                    b.Property<DateTime>("updated_at")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.HasKey("Id");
 
@@ -184,6 +278,16 @@ namespace GeminiAsistanBackend.Infrastructure.Migrations
                     b.ToTable("tetikleyici_komut", (string)null);
                 });
 
+            modelBuilder.Entity("GeminiAsistanBackend.Domain.Entities.AsistanYanit", b =>
+                {
+                    b.HasOne("GeminiAsistanBackend.Domain.Entities.CihazKomutu", "cihazkomutu")
+                        .WithMany("AsistanYanitlar")
+                        .HasForeignKey("cihaz_komut_id")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("cihazkomutu");
+                });
+
             modelBuilder.Entity("GeminiAsistanBackend.Domain.Entities.EgitimDataset", b =>
                 {
                     b.HasOne("GeminiAsistanBackend.Domain.Entities.SesTetikleyicisi", "SesTetikleyicisi")
@@ -203,6 +307,17 @@ namespace GeminiAsistanBackend.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("Komut");
+                });
+
+            modelBuilder.Entity("GeminiAsistanBackend.Domain.Entities.RedmineEgitimDataset", b =>
+                {
+                    b.HasOne("GeminiAsistanBackend.Domain.Entities.SesTetikleyicisi", "sesTetikleyicisi")
+                        .WithMany("RedmineEgitimDatasets")
+                        .HasForeignKey("sesTetikleyici_id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("sesTetikleyicisi");
                 });
 
             modelBuilder.Entity("GeminiAsistanBackend.Domain.Entities.TetikleyiciKomut", b =>
@@ -226,6 +341,8 @@ namespace GeminiAsistanBackend.Infrastructure.Migrations
 
             modelBuilder.Entity("GeminiAsistanBackend.Domain.Entities.CihazKomutu", b =>
                 {
+                    b.Navigation("AsistanYanitlar");
+
                     b.Navigation("IslemLoglari");
 
                     b.Navigation("TetikleyiciKomutlari");
@@ -234,6 +351,8 @@ namespace GeminiAsistanBackend.Infrastructure.Migrations
             modelBuilder.Entity("GeminiAsistanBackend.Domain.Entities.SesTetikleyicisi", b =>
                 {
                     b.Navigation("EgitimDatasetleri");
+
+                    b.Navigation("RedmineEgitimDatasets");
 
                     b.Navigation("TetikleyiciKomutlari");
                 });

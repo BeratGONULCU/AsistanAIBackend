@@ -17,9 +17,11 @@ public class SesTetikleyicisi
     public EklenmeTuru? EklenmeTuru { get; set; }  // MANUEL , AI_LEARNED
     // public double? ai_confidence_score { get; set; } // gelen veri 0 ile 1 arasında olacak
     public double? llm_confidence_score { get; set; } // gelen veri 0 ile 1 arasında olacak
-
+    public DateTime created_at { get; set; } = DateTime.UtcNow;
+    public DateTime updated_at {  get; set; } = DateTime.UtcNow;
     public ICollection<TetikleyiciKomut> TetikleyiciKomutlari { get; set; } = new List<TetikleyiciKomut>();
     public ICollection<EgitimDataset> EgitimDatasetleri { get; set; } = new List<EgitimDataset>();
+    public ICollection<RedmineEgitimDataset> RedmineEgitimDatasets { get; set; } = new List<RedmineEgitimDataset>();
 }
 
 

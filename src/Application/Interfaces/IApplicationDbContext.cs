@@ -15,6 +15,8 @@ public interface IApplicationDbContext
     DbSet<Domain.Entities.SesTetikleyicisi> SesTetikleyicileri { get; }
     DbSet<Domain.Entities.TetikleyiciKomut> TetikleyiciKomutlar { get; }
     DbSet<Domain.Entities.EgitimDataset> EgitimDataset { get; }
+    DbSet<RedmineEgitimDataset> RedmineEgitimDataset { get; }
+    DbSet<AsistanYanit> AsistanYanit { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

@@ -1,4 +1,6 @@
-﻿using GeminiAsistanBackend.Domain.Entities;
+﻿using GeminiAsistanBackend.Application.DTOs.SesTetikleyici;
+using GeminiAsistanBackend.Domain.Entities;
+using GeminiAsistanBackend.Domain.Enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,9 +11,14 @@ namespace GeminiAsistanBackend.Application.Interfaces.Repositories;
 
 public interface ISesTetikleyiciRepository : IGenericRepository<SesTetikleyicisi>
 {
-    Task<SesTetikleyicisi> CompareTetikleyiciMetin(string compareMetin); 
+    Task<SesTetikleyicisi> CompareTetikleyiciMetin(string compareMetin);
     // bu method içerisinde tetikleyicimetin değeri içerisinde python içerisindeki algoritma ile benzerlik araması yapacak.
     // ama burada tüm db değerlerini taramak uzun sürebilir.
+    Task<IReadOnlyCollection<SesTetikleyiciResponse>> GetSesTetikleyiciByType(string type, CancellationToken cancellationToken);
+    Task<int> CountTetikleyiciByType(string type, CancellationToken cancellationToken);
+
+    // eklenmeturu ile arama için enum mı dönmesi alması gerek
+    Task<IReadOnlyCollection<SesTetikleyiciResponse>> GetSesTetikleyiciByEklenmeTuru(EklenmeTuru eklenmeturu, CancellationToken cancellationToken);
 }
 
 

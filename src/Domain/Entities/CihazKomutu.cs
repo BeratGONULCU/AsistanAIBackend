@@ -21,6 +21,7 @@ public class CihazKomutu
     // public ICollection<SesTetikleyicisi> SesTetikleyicileri { get; set; } = new List<SesTetikleyicisi>();
     public ICollection<IslemLog> IslemLoglari { get; set; } = new List<IslemLog>();
     public ICollection<TetikleyiciKomut> TetikleyiciKomutlari { get; set; } = new List<TetikleyiciKomut>();
+    public ICollection<AsistanYanit> AsistanYanitlar { get; set; } = new List<AsistanYanit>();
 }
 
 

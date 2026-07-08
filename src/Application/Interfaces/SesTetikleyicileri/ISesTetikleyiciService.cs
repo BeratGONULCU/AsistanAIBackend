@@ -11,4 +11,5 @@ public interface ISesTetikleyiciService
 {
     Task<SesTetikleyiciResponse> CreateSesTetikleyici(CreateSesTetikleyiciRequest request,CancellationToken cancellationToken);
     Task<List<SesTetikleyiciResponse>> GetAll(CancellationToken cancellationToken);
+    Task<bool> CountSesTetikleyicileri(CancellationToken cancellationToken);
 }

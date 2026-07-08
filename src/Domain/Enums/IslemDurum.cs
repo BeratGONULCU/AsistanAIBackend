@@ -8,6 +8,9 @@ public enum IslemDurum
     YEREL_CALISTI, 
     OLLAMA_YALITTI,
     OLLAMA_AI_LEARNED,
+    AI_LEARNED,
+    MANUEL,
+    CALISACAK_KOD_BASARILI,
     HATA
 }
 

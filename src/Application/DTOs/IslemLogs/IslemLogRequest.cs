@@ -13,8 +13,9 @@ public class IslemLogRequest
     public string DuyulanSes { get; set; } = null!;
     public IslemDurum Durum { get; set; }
     public string? CevapMetni { get; set; }
-    public DateTime TarihSaat {  get; set; }
+    public DateTime TarihSaat {  get; set; } = DateTime.Now;
     public int? KomutId { get; set; }
+    public string? raw_ai_json { get; set; }
 }
 
 /*

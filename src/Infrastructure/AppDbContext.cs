@@ -23,6 +23,9 @@ public class AppDbContext : DbContext , IApplicationDbContext
     public DbSet<IslemLog> IslemLoglari => Set<IslemLog>();
     public DbSet<TetikleyiciKomut> TetikleyiciKomutlar => Set<TetikleyiciKomut>();
     public DbSet<EgitimDataset> EgitimDataset => Set<EgitimDataset>();
+    public DbSet<AsistanYanit> AsistanYanit => Set<AsistanYanit>();
+
+    public DbSet<RedmineEgitimDataset> RedmineEgitimDataset => Set<RedmineEgitimDataset>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -32,6 +35,8 @@ public class AppDbContext : DbContext , IApplicationDbContext
         modelBuilder.Entity<IslemLog>().ToTable("islem_loglari");
         modelBuilder.Entity<TetikleyiciKomut>().ToTable("tetikleyici_komut");
         modelBuilder.Entity<EgitimDataset>().ToTable("egitim_dataset");
+        modelBuilder.Entity<RedmineEgitimDataset>().ToTable("redmine_egitim_dataset");
+        modelBuilder.Entity<AsistanYanit>().ToTable("asistan_yanit");
 
         // CihazKomutu
         modelBuilder.Entity<CihazKomutu>(eb =>
@@ -86,6 +91,15 @@ public class AppDbContext : DbContext , IApplicationDbContext
                 .HasColumnName("llm_confidence_score")
                 .IsRequired(false);
 
+
+            eb.Property(e => e.created_at)
+                .HasColumnName("created_at")
+                .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+            eb.Property(e => e.updated_at)
+                .HasColumnName("updated_at")
+                .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
             /*
             // Relationship: CihazKomutu 1 - * SesTetikleyicileri, cascade delete
             eb.HasOne(e => e.Komut)
@@ -112,6 +126,50 @@ public class AppDbContext : DbContext , IApplicationDbContext
                 .WithMany(e => e.TetikleyiciKomutlari)
                 .HasForeignKey(e => e.TetikleyiciId)
                 .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // AsistanYanit
+        modelBuilder.Entity<AsistanYanit>(eb =>
+        {
+            eb.HasKey(e => e.id);
+
+            eb.Property(e => e.asistan_yanit)
+                .IsRequired(true)
+                .HasColumnName("asistan_yanit")
+                .HasMaxLength(1000);
+
+            // ENUM CONFIGURATION
+            eb.Property(e => e.yanitTuru)
+                .IsRequired(true)
+                .HasColumnName("yanit_turu") // DB'deki kolon adı 'yanit_turu' olacak
+                .HasMaxLength(50)
+                .HasConversion<string>(); // C#'taki enum'ı DB'ye string/varchar olarak kaydeder!
+
+            eb.Property(e => e.created_at)
+                .HasColumnName("created_at")
+                .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+            eb.Property(e => e.updated_at)
+                .HasColumnName("updated_at")
+                .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+            eb.Property(e => e.SessionId)
+                .HasColumnName("session_id")
+                .IsRequired(true);
+
+            eb.Property(e => e.feedback)
+                .HasColumnName("feedback")
+                .HasColumnType("varchar(255)")
+                .IsRequired(false);
+
+            eb.Property(e => e.cihaz_komut_id)
+                .HasColumnName("cihaz_komut_id")
+                .IsRequired(false);
+
+            eb.HasOne(e => e.cihazkomutu)
+                .WithMany(c => c.AsistanYanitlar)
+                .HasForeignKey(e => e.cihaz_komut_id)
+                .OnDelete(DeleteBehavior.SetNull);
         });
 
         // IslemLog
@@ -167,7 +225,28 @@ public class AppDbContext : DbContext , IApplicationDbContext
                 .WithMany(c => c.EgitimDatasetleri)
                 .HasForeignKey(e => e.sesTetikleyici_id)
                 .OnDelete(DeleteBehavior.Cascade);
-        });          
+        });
+
+        modelBuilder.Entity<RedmineEgitimDataset>(eb =>
+        {
+            eb.ToTable("redmine_egitim_dataset");
+
+            eb.HasKey(e => e.Id);
+            eb.Property(e => e.redmine_tetikleyici_metin)
+                .HasColumnName("redmine_tetikleyici_metin")
+                .IsRequired(true);
+
+            eb.HasIndex(e => e.redmine_tetikleyici_metin).IsUnique();
+
+            eb.Property(eb => eb.action)
+                .HasColumnName("action")
+                .IsRequired(true);
+
+            eb.HasOne(e => e.sesTetikleyicisi)
+                .WithMany(c => c.RedmineEgitimDatasets)
+                .HasForeignKey(e => e.sesTetikleyici_id)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
 
         base.OnModelCreating(modelBuilder);
     }
