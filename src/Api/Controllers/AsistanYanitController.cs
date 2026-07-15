@@ -36,6 +36,7 @@ public class AsistanYanitController : ControllerBase
             request.AsistanYanit,
             yanitTuru, // burada default YANIT verecek
             komut_id,
+            request.RawResponse,
             request.SessionId,
             temizFeedback
         );
@@ -62,6 +63,34 @@ public class AsistanYanitController : ControllerBase
             request.AsistanYanit,
             yanitTuru, // burada default YANIT verecek
             komut_id,
+            request.RawResponse,
+            request.SessionId,
+            temizFeedback
+        );
+
+        var result = await _mediator.Send(command, cancellationToken);
+
+        return Ok(result);
+    }
+
+    // python içerisinden gelecek yanıt için - python gelen her metin için
+    [HttpPost("send-asistan-aciklama")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(bool))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<AsistanSendResponse>> SendAciklama([FromBody] AsistanSendRequest request, CancellationToken cancellationToken)
+    {
+        // Eğer gelen veri boşluk veya boş string ise null'a çek
+        string? temizFeedback = string.IsNullOrWhiteSpace(request.feedback) ? null : request.feedback;
+        // nullable
+        int? komut_id = request.KomutId <= 0 ? null : request.KomutId;
+        AsistanYanitTuru yanitTuru = Domain.Enums.AsistanYanitTuru.ACIKLAMA;
+
+        // burada session belirtip göndermek gerek
+        var command = new CreateAsistanYanitCommand(
+            request.AsistanYanit,
+            yanitTuru, // burada default YANIT verecek
+            komut_id,
+            request.RawResponse,
             request.SessionId,
             temizFeedback
         );

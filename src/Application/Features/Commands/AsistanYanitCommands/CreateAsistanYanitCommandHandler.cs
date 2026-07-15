@@ -45,6 +45,7 @@ public sealed class CreateAsistanYanitCommandHandler : IRequestHandler<CreateAsi
             Id = entities.id,
             AsistanYanit = asistanYanit,
             YanitTuru = yanitTuru,
+            RawResponse = request.raw_response,
             SessionID = entities.SessionId, // Artık 0 değil, veritabanına yazılan gerçek SessionId dönecek
             feedback = entities.feedback,
             CreatedAt = entities.created_at,

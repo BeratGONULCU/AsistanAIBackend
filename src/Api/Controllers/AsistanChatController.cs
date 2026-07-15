@@ -3,6 +3,7 @@ using GeminiAsistanBackend.Application.Features.Commands.AsistanYanitCommands;
 using GeminiAsistanBackend.Application.Interfaces;
 using GeminiAsistanBackend.Application.Interfaces.Python;
 using GeminiAsistanBackend.Domain.Entities;
+using GeminiAsistanBackend.Domain.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -38,49 +39,127 @@ public class AsistanChatController : ControllerBase
     [FromBody] AsistanChatRequest request,
     CancellationToken cancellationToken)
     {
-        if (string.IsNullOrWhiteSpace(request.Message))
+        if (request == null)
         {
-            return BadRequest(new
+            return BadRequest(new AsistanChatResponse
             {
-                ok = false,
-                message = "Mesaj boş olamaz."
+                Ok = false,
+                Message = "Request boş olamaz."
             });
         }
 
-        var sessionId = request.SessionId.GetValueOrDefault();
-        if (sessionId <= 0)
+        if (string.IsNullOrWhiteSpace(request.Message))
         {
-            var createdSession = await _mediator.Send(
-            new CreateSessionCommand(request.Message, Domain.Enums.AsistanYanitTuru.KOMUT),
-            cancellationToken
-            );
-            
-            sessionId = createdSession.SessionID;
+            return BadRequest(new AsistanChatResponse
+            {
+                Ok = false,
+                Message = "Mesaj boş olamaz."
+            });
+        }
 
-            //sessionId = 0;
+        var message = request.Message.Trim();
+        var sessionId = request.SessionId.GetValueOrDefault();
+
+        var yanitTuru =
+            request.asistanYanitTuru == AsistanYanitTuru.ACIKLAMA
+                ? AsistanYanitTuru.ACIKLAMA
+                : AsistanYanitTuru.KOMUT;
+
+        try
+        {
+            if (sessionId <= 0)
+            {
+                // İlk mesajda yeni session oluşturulur
+                // ve ilk mesaj CreateSessionCommand tarafından kaydedilir.
+                var createdSession = await _mediator.Send(
+                    new CreateSessionCommand(
+                        message,
+                        yanitTuru
+                    ),
+                    cancellationToken
+                );
+
+                sessionId = createdSession.SessionID;
+
+                if (sessionId <= 0)
+                {
+                    throw new InvalidOperationException(
+                        "Session oluşturulamadı."
+                    );
+                }
+            }
+            else
+            {
+                // Session ID gerçekten mevcut mu?
+                var sessionExists = await _context.AsistanYanit
+                    .AnyAsync(
+                        x => x.SessionId == sessionId,
+                        cancellationToken
+                    );
+
+                if (!sessionExists)
+                {
+                    return NotFound(new AsistanChatResponse
+                    {
+                        Ok = false,
+                        SessionId = sessionId,
+                        UserText = message,
+                        AssistantResponse = "",
+                        Message = $"Session bulunamadı: {sessionId}"
+                    });
+                }
+
+                // Sonraki mesaj mevcut session'a bir kez kaydedilir.
+                var command = new CreateAsistanYanitCommand(
+                    message,
+                    yanitTuru,
+                    null,
+                    null,
+                    sessionId,
+                    null
+                );
+
+                await _mediator.Send(
+                    command,
+                    cancellationToken
+                );
+            }
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(
+                StatusCodes.Status500InternalServerError,
+                new AsistanChatResponse
+                {
+                    Ok = false,
+                    SessionId = sessionId,
+                    UserText = message,
+                    AssistantResponse = "",
+                    Message = $"Mesaj kaydedilirken hata oluştu: {ex.Message}"
+                }
+            );
         }
 
         var requestId = Guid.NewGuid().ToString("N");
 
-        /*
         var pythonPayload = new
         {
             requestId,
-            asistanYanit = request.Message.Trim(),
-            yanitTuru = request.asistanYanitTuru,
-            sessionId
-        };
-        */
+            asistanYanit = message,
+            yanitTuru = yanitTuru.ToString(),
+            sessionId,
 
-        var pythonPayload = new
-        {
-            asistanYanit = request.Message.Trim(),
+            // Python tekrar session veya kullanıcı mesajı kaydetmeyecek.
+            saveToBackend = false
         };
 
         string pythonRawResult;
+
         try
         {
-            pythonRawResult = await _pythonService.RunMainScriptAsync(pythonPayload);
+            pythonRawResult = await _pythonService.RunMainScriptAsync(
+                pythonPayload
+            );
         }
         catch (Exception ex)
         {
@@ -88,19 +167,21 @@ public class AsistanChatController : ControllerBase
             {
                 Ok = false,
                 SessionId = sessionId,
-                UserText = request.Message,
+                UserText = message,
                 AssistantResponse = "",
                 Message = $"Python çalıştırılırken hata oluştu: {ex.Message}"
             });
         }
 
-        var assistantResponse = ExtractAssistantResponse(pythonRawResult);
+        var assistantResponse = ExtractAssistantResponse(
+            pythonRawResult
+        );
 
         return Ok(new AsistanChatResponse
         {
             Ok = true,
             SessionId = sessionId,
-            UserText = request.Message,
+            UserText = message,
             AssistantResponse = assistantResponse,
             Message = "Komut işlendi."
         });
@@ -110,11 +191,8 @@ public class AsistanChatController : ControllerBase
     public async Task<ActionResult<bool>> checkSession()
     {
         var script =
-            "$connections = Get-NetTCPConnection -LocalPort 8766 -State Listen -ErrorAction SilentlyContinue; " +
-            "if (-not $connections) { Write-Output 'NO_PROCESS'; exit 0 }; " +
-            "$pids = $connections.OwningProcess | Sort-Object -Unique; " +
-            "$pids | ForEach-Object { Stop-Process -Id $_ -Force }; " +
-            "$pids";
+            @"$connections = Get-NetTCPConnection -LocalPort 8766 -State Listen -ErrorAction SilentlyContinue; " +
+            @"if (-not $connections) { Write-Output 'False' }  else { Write-Output 'True' }" ;
 
         var psi = new ProcessStartInfo
         {
@@ -148,6 +226,8 @@ public class AsistanChatController : ControllerBase
         return true;
     }
 
+
+    // bu direkt python session kapatıyor, bunu ipt
     [HttpPost("cancelSession")]
     public async Task<IActionResult> cancelSession()
     {

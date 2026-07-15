@@ -11,6 +11,7 @@ public class AsistanSendRequest
 {
     public string AsistanYanit { get; set; } = null!;
     //public AsistanYanitTuru YanitTuru { get; set; }
+    public string? RawResponse { get; set; }
     public int? KomutId { get; set; }
     public int SessionId { get; set; }
     public string? feedback { get; set; } = null;

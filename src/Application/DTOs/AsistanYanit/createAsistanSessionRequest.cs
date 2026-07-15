@@ -11,7 +11,7 @@ public class createAsistanSessionRequest
 {
     public string AsistanYanit { get; set; } = null!;
     // public AsistanYanitTuru? YanitTuru { get; set; } = null;
-    public AsistanYanitTuru YanitTuru { get; set; } = AsistanYanitTuru.YANIT;
+    public AsistanYanitTuru YanitTuru { get; set; } = AsistanYanitTuru.KOMUT;
 }
 
 

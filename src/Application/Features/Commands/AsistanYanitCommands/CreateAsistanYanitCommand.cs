@@ -14,6 +14,7 @@ public sealed record CreateAsistanYanitCommand(
     string asistan_yanit,
     AsistanYanitTuru yanit_turu,
     int? cihaz_komut_id,
+    string? raw_response,
     int session_id,
     string? feedback
     ) : IRequest<AsistanSendResponse>;

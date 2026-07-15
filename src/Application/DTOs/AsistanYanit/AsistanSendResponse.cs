@@ -15,6 +15,7 @@ public class AsistanSendResponse
     public AsistanYanitTuru YanitTuru { get; set; }
     [JsonPropertyName("sessionID")]
     public int SessionID { get; set; }
+    public string? RawResponse { get; set; }
     public string? feedback { get; set; }
     public DateTime CreatedAt { get; set; } 
     public DateTime UpdatedAt { get; set; }
