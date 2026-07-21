@@ -116,6 +116,7 @@ public class AsistanChatController : ControllerBase
                     null,
                     null,
                     sessionId,
+                    null,
                     null
                 );
 

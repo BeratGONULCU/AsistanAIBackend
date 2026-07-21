@@ -45,7 +45,7 @@ public class RedMineDatasetController : ControllerBase
 
     // burada gönderilen excel verisini stream dönüştürüp json olarak dönüyor.
     // burada response dönmeden nasıl yapılabilir. (kolonlar dinamik veya değişken ise nasıl göndericez?)
- 
+
     [HttpPost("Excel-read")]
     [Consumes("multipart/form-data")]
     public async Task<ActionResult> ReadExcelFile([FromForm] ImportExcelRequest request, CancellationToken cancellationToken)
@@ -79,12 +79,14 @@ public class RedMineDatasetController : ControllerBase
         return Ok(items);
     }
 
-        
+
     // Bu endpoint excel verisini db içerisinde ekliyor
 
     [HttpPost("import-excel")]
     [Consumes("multipart/form-data")]
-    public async Task<ActionResult> ImportExcel([FromForm] ImportExcelRequest request, CancellationToken cancellationToken)
+    public async Task<ActionResult> ImportExcel(
+    [FromForm] ImportExcelRequest request,
+    CancellationToken cancellationToken)
     {
         if (request?.File == null || request.File.Length == 0)
             return BadRequest("Dosya boş.");
@@ -93,9 +95,10 @@ public class RedMineDatasetController : ControllerBase
 
         using var stream = request.File.OpenReadStream();
         using var workbook = new XLWorkbook(stream);
-        var worksheet = workbook.Worksheet(1);
 
+        var worksheet = workbook.Worksheet(1);
         var usedRange = worksheet.RangeUsed();
+
         if (usedRange == null)
             return BadRequest("Excel dosyasında veri bulunamadı.");
 
@@ -103,32 +106,108 @@ public class RedMineDatasetController : ControllerBase
 
         foreach (var row in rows)
         {
-            var item = new CreateRedmineDatasetRequest
-            {
-                redmine_tetikleyici_metin = row.Cell(1).GetString(),
-                action = row.Cell(2).GetString(),
-                sesTetikleyici_id = row.Cell(3).GetValue<int>()
-            };
+            var tetikleyiciMetin = row.Cell(1).GetString();
+            var action = row.Cell(2).GetString();
 
-            items.Add(item);
+            if (!row.Cell(3).TryGetValue<int>(out var sesTetikleyiciId))
+                return BadRequest(
+                    $"Geçersiz SesTetikleyiciId. Satır: {row.RowNumber()}");
+
+            if (string.IsNullOrWhiteSpace(tetikleyiciMetin) &&
+                string.IsNullOrWhiteSpace(action))
+            {
+                continue;
+            }
+
+            items.Add(new CreateRedmineDatasetRequest
+            {
+                redmine_tetikleyici_metin = tetikleyiciMetin,
+                action = action,
+                sesTetikleyici_id = sesTetikleyiciId
+            });
         }
 
-        var command = new CreateRedmineEgitimdatasetCommand(items);
-        var result = await _mediator.Send(command, cancellationToken);
+        if (items.Count == 0)
+            return BadRequest("Excel dosyasında aktarılabilecek kayıt bulunamadı.");
 
+        var results = new List<object?>();
+
+        foreach (var item in items)
+        {
+            var command = new CreateRedmineEgitimdatasetCommand(
+                item.redmine_tetikleyici_metin,
+                item.action,
+                item.sesTetikleyici_id
+            );
+
+            var result = await _mediator.Send(command, cancellationToken);
+            results.Add(result);
+        }
+
+        return Ok(results);
+    }
+
+    [HttpPost("create-item")]
+    [ProducesResponseType(typeof(RedmineEgitimdatasetResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> CreateItem(
+    [FromBody] CreateRedmineEgitimdatasetRequest request,
+    CancellationToken cancellationToken)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        if (string.IsNullOrWhiteSpace(request.RedmineTetikleyiciMetin))
+            return BadRequest("RedmineTetikleyiciMetin boş olamaz.");
+
+        if (string.IsNullOrWhiteSpace(request.Action))
+            return BadRequest("Action boş olamaz.");
+
+        if (request.SesTetikleyiciId <= 0)
+            return BadRequest("SesTetikleyiciId geçerli olmalıdır.");
+
+        var command = new CreateRedmineEgitimdatasetCommand(
+            request.RedmineTetikleyiciMetin,
+            request.Action,
+            request.SesTetikleyiciId
+        );
+
+        var result = await _mediator.Send(command, cancellationToken);
         return Ok(result);
     }
 
 
     [HttpPost("create")]
-    public async Task<ActionResult> Create([FromBody] List<CreateRedmineDatasetRequest> request, CancellationToken cancellationToken)
+    public async Task<ActionResult> Create(
+    [FromBody] List<CreateRedmineDatasetRequest> request,
+    CancellationToken cancellationToken)
     {
         if (request == null || request.Count == 0)
             return BadRequest("Gönderilen veri boş.");
 
-        var command = new CreateRedmineEgitimdatasetCommand(request);
-        var result = await _mediator.Send(command, cancellationToken);
+        var results = new List<object?>();
 
-        return Ok(result);
+        foreach (var item in request)
+        {
+            if (string.IsNullOrWhiteSpace(item.redmine_tetikleyici_metin))
+                return BadRequest("Redmine tetikleyici metni boş olamaz.");
+
+            if (string.IsNullOrWhiteSpace(item.action))
+                return BadRequest("Action boş olamaz.");
+
+            if (item.sesTetikleyici_id <= 0)
+                return BadRequest("SesTetikleyiciId geçerli olmalıdır.");
+
+            var command = new CreateRedmineEgitimdatasetCommand(
+                item.redmine_tetikleyici_metin,
+                item.action,
+                item.sesTetikleyici_id
+            );
+
+            var result = await _mediator.Send(command, cancellationToken);
+            results.Add(result);
+        }
+
+        return Ok(results);
     }
 }

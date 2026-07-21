@@ -53,7 +53,7 @@ public sealed class EgitimDatasetController : ControllerBase
     [HttpPost("sync")]
     public async Task<ActionResult> DatasetSync(CancellationToken cancellationToken)
     {
-        var resultSesTetikleyici = await _mediator.Send(new GetAllSesTetikleyicileriQuery(),cancellationToken);
+        var resultSesTetikleyici = await _mediator.Send(new GetAllSesTetikleyicileriQuery(), cancellationToken);
 
         return Ok(resultSesTetikleyici);
     }
@@ -99,10 +99,11 @@ public sealed class EgitimDatasetController : ControllerBase
 
         var cihazKomutlariData = cihazKomutlariType
             .Where(x => x.type != "error")
-            .Select(x => new {
-            x.Id,
-            x.type,
-        }).ToList();
+            .Select(x => new
+            {
+                x.Id,
+                x.type,
+            }).ToList();
 
         var data =
         from ses in SesTetikleyiciMetinler
@@ -123,8 +124,8 @@ public sealed class EgitimDatasetController : ControllerBase
         return Ok(data.ToList());
     }
 
-    
-     
+
+
     [HttpPost("create")]
     public async Task<ActionResult> Create(CancellationToken cancellationToken)
     {
@@ -164,7 +165,8 @@ public sealed class EgitimDatasetController : ControllerBase
 
         var cihazKomutlariData = cihazKomutlariType
             .Where(x => x.type != "error")
-            .Select(x => new {
+            .Select(x => new
+            {
                 x.Id,
                 x.type,
             }).ToList();
@@ -204,7 +206,37 @@ public sealed class EgitimDatasetController : ControllerBase
 
         return Ok(result);
     }
-  
+
+    [HttpPost("create-item")]
+    [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> CreateItem(
+    [FromBody] CreateEgitimDatasetRequest request,
+    CancellationToken cancellationToken)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        if (string.IsNullOrWhiteSpace(request.TetikleyiciMetin))
+            return BadRequest("TetikleyiciMetin boş olamaz.");
+
+        if (request.TypeNum is null)
+            return BadRequest("TypeNum zorunludur.");
+
+        if (request.sesTetikleyiciId <= 0)
+            return BadRequest("sesTetikleyiciId geçerli olmalıdır.");
+
+        var command = new CreateEgitimDatasetCommand(
+            request.TetikleyiciMetin,
+            request.TypeNum.Value,
+            request.sesTetikleyiciId
+        );
+
+        var result = await _mediator.Send(command, cancellationToken);
+
+        return Ok(result);
+    }
+
     // burada gelen id değerine göre tetikleyici_komut içerisindeki komut_id değerini de alıcaz.
     [HttpGet("Get-all-egitimdataset")]
     [ProducesResponseType(typeof(List<EgitimDatasetResponse>), StatusCodes.Status200OK)]
@@ -213,7 +245,7 @@ public sealed class EgitimDatasetController : ControllerBase
     {
         var result = await _mediator.Send(new GetAllEgitimDatasetQuery(), cancellationToken);
 
-        if(result is null || !result.Any()) // liste var mı ve boş mu
+        if (result is null || !result.Any()) // liste var mı ve boş mu
         {
             return NotFound("liste içerisinde herhangi bir bulunamadı.");
         }

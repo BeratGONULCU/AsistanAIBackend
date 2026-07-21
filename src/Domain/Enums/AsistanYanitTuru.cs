@@ -15,6 +15,7 @@ public enum AsistanYanitTuru
     DUZELTME, 
     REDMINE,
     PENDING, // cevap ui içerisinden geldiyse bu yazılır
-    FEEDBACK, // gelen cevap doğru değilse bu gelir
-    HATA
+    FEEDBACK, // bu redmine_egitim_dataset içine atılmış durumda demek
+    HATA,
+    FEEDBACKHATA // bu redmine eğitilecek veriler için 
 }

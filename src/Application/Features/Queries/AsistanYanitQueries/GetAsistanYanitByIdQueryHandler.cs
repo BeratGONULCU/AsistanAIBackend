@@ -51,7 +51,8 @@ public sealed class GetAsistanYanitByIdQueryHandler : IRequestHandler<GetAsistan
             YanitTuru = yanitTuruEnum,
             SessionID = entities.SessionId, 
             feedback = entities.feedback,
-            KomutId = entities.cihaz_komut_id
+            KomutId = entities.cihaz_komut_id,
+            JsonData = entities.JsonData
         };
     }
 

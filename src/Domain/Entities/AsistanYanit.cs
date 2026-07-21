@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using GeminiAsistanBackend.Domain.Enums;
 
@@ -19,6 +21,10 @@ public class AsistanYanit
 
     public int? cihaz_komut_id {  get; set; }
     public CihazKomutu cihazkomutu { get; set; } = null!;
+
+    // burada get gibi işlemlerde gelen json değeri kaydetmek için kullanılacak.
+    [Column(TypeName = "jsonb")]
+    public JsonElement? JsonData { get; set; }
 }
 
 /*

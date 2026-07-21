@@ -9,6 +9,7 @@ public interface IUnitOfWork : IAsyncDisposable
     //IGenericRepository<GeminiAsistanBackend.Domain.Entities.IslemLog> IslemLoglariGeneric {  get; }
     IIslemLogRepository IslemLoglari { get; }
     ICihazKomutuRepository CihazKomutu { get; }
+    // IAsistanYanitRepository AsistanYanit { get; }
     IGenericRepository<AsistanYanit> AsistanYanit { get; }
 
     //IGenericRepository<SesTetikleyicisi> SesTetikleyicileri { get; }

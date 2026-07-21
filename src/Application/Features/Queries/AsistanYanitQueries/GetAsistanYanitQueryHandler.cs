@@ -32,7 +32,8 @@ public sealed class GetAsistanYanitQueryHandler : IRequestHandler<GetAsistanYani
                 SessionID = x.SessionId,
                 CreatedAt = x.created_at,
                 UpdatedAt = x.updated_at,
-                KomutId = x.cihaz_komut_id
+                KomutId = x.cihaz_komut_id,
+                JsonData = x.JsonData
             }).ToList();
     }
 

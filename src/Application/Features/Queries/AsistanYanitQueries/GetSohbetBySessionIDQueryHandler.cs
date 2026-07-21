@@ -28,12 +28,12 @@ public sealed class GetSohbetBySessionIDQueryHandler : IRequestHandler<GetSohbet
 
         var entities = await _unitofwork.AsistanYanit.GetByIdAsync(request.sessionId);
 
-        var asistanYanit = entities.asistan_yanit.ToString();
-
         if (entities == null)
         {
             return null;
         }
+
+        var asistanYanit = entities.asistan_yanit.ToString();
 
         if (!Enum.TryParse<AsistanYanitTuru>(entities.yanitTuru.ToString(), true, out var yanitTuruEnum))
         {
@@ -48,7 +48,8 @@ public sealed class GetSohbetBySessionIDQueryHandler : IRequestHandler<GetSohbet
             YanitTuru = yanitTuruEnum,
             SessionID = entities.SessionId,
             feedback = entities.feedback,
-            KomutId = entities.cihaz_komut_id
+            KomutId = entities.cihaz_komut_id,
+            JsonData = entities.JsonData,
         };
     }
 }

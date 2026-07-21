@@ -166,6 +166,11 @@ public class AppDbContext : DbContext , IApplicationDbContext
                 .HasColumnName("cihaz_komut_id")
                 .IsRequired(false);
 
+            eb.Property(e => e.JsonData)
+                .HasColumnName("JsonData")
+                .HasColumnType("jsonb")
+                .IsRequired(false);
+
             eb.HasOne(e => e.cihazkomutu)
                 .WithMany(c => c.AsistanYanitlar)
                 .HasForeignKey(e => e.cihaz_komut_id)

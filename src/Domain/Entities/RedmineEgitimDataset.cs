@@ -14,15 +14,3 @@ public class RedmineEgitimDataset
     public int sesTetikleyici_id { get; set; }
     public SesTetikleyicisi sesTetikleyicisi { get; set; } = null!;
 }
-
-
-/*
- 
- Table redmine_egitim_dataset{
-  id integer [primary key, increment]
-  tetikleyici_metin varchar [unique] // cümle
-  action varchar [not null] // işlem
-  sesTetikleyici_id integer [not null]
-}
-
- */

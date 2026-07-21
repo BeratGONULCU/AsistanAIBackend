@@ -32,9 +32,10 @@ public sealed class CreateAsistanYanitCommandHandler : IRequestHandler<CreateAsi
         {
             asistan_yanit = asistanYanit,
             cihaz_komut_id = cihazKomutID,
-            yanitTuru = yanitTuru,          // 1. BU SATIR EKSİKTİ: Enum türünü bağladık
-            SessionId = request.session_id, // 2. BU SATIR EKSİKTİ: Command'den gelen session_id'yi bağladık
-            feedback = request.feedback     // 3. BU SATIR EKSİKTİ: Feedback alanını bağladık
+            yanitTuru = yanitTuru,          // Enum türünü bağladık
+            SessionId = request.session_id, // Command'den gelen session_id'yi bağladık
+            feedback = request.feedback,     // Feedback alanını bağladık
+            JsonData = request.JsonData,
         };
 
         await _context.AsistanYanit.AddAsync(entities, cancellationToken);
@@ -46,11 +47,12 @@ public sealed class CreateAsistanYanitCommandHandler : IRequestHandler<CreateAsi
             AsistanYanit = asistanYanit,
             YanitTuru = yanitTuru,
             RawResponse = request.raw_response,
-            SessionID = entities.SessionId, // Artık 0 değil, veritabanına yazılan gerçek SessionId dönecek
+            SessionID = entities.SessionId, // veritabanına yazılan gerçek SessionId dönecek
             feedback = entities.feedback,
             CreatedAt = entities.created_at,
             UpdatedAt = entities.updated_at,
-            KomutId = entities.cihaz_komut_id
+            KomutId = entities.cihaz_komut_id,
+            JsonData = entities.JsonData,
         };
     }
 

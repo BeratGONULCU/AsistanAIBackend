@@ -1,54 +1,40 @@
-﻿using GeminiAsistanBackend.Application.DTOs.EgitimDataset;
 using GeminiAsistanBackend.Application.DTOs.RedmineEgitimdataset;
 using GeminiAsistanBackend.Application.Interfaces;
 using GeminiAsistanBackend.Domain.Entities;
 using MediatR;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace GeminiAsistanBackend.Application.Features.Commands.RedmineEgitimdatasetCommands;
 
-public sealed class CreateRedmineEgitimdatasetCommandHandler : IRequestHandler<CreateRedmineEgitimdatasetCommand,List<RedmineEgitimdatasetResponse>>
+public sealed class CreateRedmineEgitimdatasetCommandHandler
+    : IRequestHandler<CreateRedmineEgitimdatasetCommand, RedmineEgitimdatasetResponse>
 {
-    private IApplicationDbContext _context;
+    private readonly IApplicationDbContext _context;
 
     public CreateRedmineEgitimdatasetCommandHandler(IApplicationDbContext context)
-    {  
-        _context = context; 
+    {
+        _context = context;
     }
 
-    // burada dışarıdan tablo içine veri girişi olacak. burada herhangi bir çoklu veri girişi sağlanır mı?
-    public async Task<List<RedmineEgitimdatasetResponse>> Handle(CreateRedmineEgitimdatasetCommand request,CancellationToken cancellationToken)
+    public async Task<RedmineEgitimdatasetResponse> Handle(
+        CreateRedmineEgitimdatasetCommand request,
+        CancellationToken cancellationToken)
     {
-        if (request.items is null || request.items.Count == 0)
-            return new List<RedmineEgitimdatasetResponse>();
-
-        var createdEntities = new List<RedmineEgitimDataset>();
-
-        foreach (var item in request.items)
+        var entity = new RedmineEgitimDataset
         {
-            var entity = new RedmineEgitimDataset
-            {
-                redmine_tetikleyici_metin = item.redmine_tetikleyici_metin,
-                action = item.action,
-                sesTetikleyici_id = item.sesTetikleyici_id
-            };
+            redmine_tetikleyici_metin = request.RedmineTetikleyiciMetin,
+            action = request.Action,
+            sesTetikleyici_id = request.SesTetikleyiciId
+        };
 
-            await _context.RedmineEgitimDataset.AddAsync(entity, cancellationToken);
-            createdEntities.Add(entity);
-        }
-
+        await _context.RedmineEgitimDataset.AddAsync(entity, cancellationToken);
         await _context.SaveChangesAsync(cancellationToken);
 
-        return createdEntities.Select(x => new RedmineEgitimdatasetResponse
+        return new RedmineEgitimdatasetResponse
         {
-            Id = x.Id,
-            redmine_tetikleyici_metin = x.redmine_tetikleyici_metin,
-            action = x.action,
-            sesTetikleyici_id = x.sesTetikleyici_id
-        }).ToList();
+            Id = entity.Id,
+            redmine_tetikleyici_metin = entity.redmine_tetikleyici_metin,
+            action = entity.action,
+            sesTetikleyici_id = entity.sesTetikleyici_id
+        };
     }
 }

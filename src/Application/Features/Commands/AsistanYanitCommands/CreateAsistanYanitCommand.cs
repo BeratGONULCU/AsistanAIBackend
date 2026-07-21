@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace GeminiAsistanBackend.Application.Features.Commands.AsistanYanitCommands;
@@ -16,7 +17,8 @@ public sealed record CreateAsistanYanitCommand(
     int? cihaz_komut_id,
     string? raw_response,
     int session_id,
-    string? feedback
+    string? feedback,
+    JsonElement? JsonData
     ) : IRequest<AsistanSendResponse>;
 
 /*
