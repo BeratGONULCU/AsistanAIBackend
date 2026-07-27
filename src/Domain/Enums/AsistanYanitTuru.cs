@@ -17,5 +17,7 @@ public enum AsistanYanitTuru
     PENDING, // cevap ui içerisinden geldiyse bu yazılır
     FEEDBACK, // bu redmine_egitim_dataset içine atılmış durumda demek
     HATA,
-    FEEDBACKHATA // bu redmine eğitilecek veriler için 
+    FEEDBACKHATA, // bu redmine eğitilecek veriler için ,
+    ONAY,
+    ONAYYANIT
 }

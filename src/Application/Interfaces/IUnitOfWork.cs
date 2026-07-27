@@ -11,6 +11,7 @@ public interface IUnitOfWork : IAsyncDisposable
     ICihazKomutuRepository CihazKomutu { get; }
     // IAsistanYanitRepository AsistanYanit { get; }
     IGenericRepository<AsistanYanit> AsistanYanit { get; }
+    IGenericRepository<AsistanSettings> AsistanSettings { get; }
 
     //IGenericRepository<SesTetikleyicisi> SesTetikleyicileri { get; }
     ISesTetikleyiciRepository SesTetikleyicileri { get;  }

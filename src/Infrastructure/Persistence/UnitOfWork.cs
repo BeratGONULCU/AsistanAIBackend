@@ -19,6 +19,7 @@ public sealed class UnitOfWork : IUnitOfWork
     private IGenericRepository<EgitimDataset>? _egitimDataset;
     private ICihazKomutuRepository _cihazKomutu;
     private IGenericRepository<AsistanYanit> _asistanYanitlar;
+    private IGenericRepository<AsistanSettings> _asistanSetting;
 
     private readonly ILogger<SesTetikleyiciRepository> _sesTetikleyiciLogger;
 
@@ -48,6 +49,9 @@ public sealed class UnitOfWork : IUnitOfWork
 
     public IGenericRepository<AsistanYanit> AsistanYanit =>
         _asistanYanitlar ??= new GenericRepository<AsistanYanit>(_context);
+
+    public IGenericRepository<AsistanSettings> AsistanSettings =>
+        _asistanSetting ??= new GenericRepository<AsistanSettings>(_context);
 
     public Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {

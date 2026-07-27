@@ -4,6 +4,7 @@ using System.Text.Json;
 using GeminiAsistanBackend.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -12,9 +13,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace GeminiAsistanBackend.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260721144134_AddAsistanSettingsTable")]
+    partial class AddAsistanSettingsTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -32,14 +35,6 @@ namespace GeminiAsistanBackend.Infrastructure.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("id"));
 
-                    b.Property<string>("ai_fallback_provider")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)")
-                        .HasDefaultValue("ollama")
-                        .HasColumnName("ai_fallback_provider");
-
                     b.Property<string>("ai_provider")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
@@ -54,14 +49,6 @@ namespace GeminiAsistanBackend.Infrastructure.Migrations
                         .HasColumnName("created_at")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
-                    b.Property<string>("dead_word")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)")
-                        .HasDefaultValue("kapat")
-                        .HasColumnName("dead_word");
-
                     b.Property<string>("gemini_api_key")
                         .HasColumnType("text")
                         .HasColumnName("gemini_api_key");
@@ -70,12 +57,6 @@ namespace GeminiAsistanBackend.Infrastructure.Migrations
                         .HasMaxLength(150)
                         .HasColumnType("character varying(150)")
                         .HasColumnName("gemini_model");
-
-                    b.Property<string>("ollama_model")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("text")
-                        .HasDefaultValue("llama3.1:8b")
-                        .HasColumnName("ollama_model");
 
                     b.Property<string>("openai_api_key")
                         .HasColumnType("text")
@@ -96,20 +77,6 @@ namespace GeminiAsistanBackend.Infrastructure.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("updated_at")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
-
-                    b.Property<bool>("voice_input_enabled")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(false)
-                        .HasColumnName("voice_input_enabled");
-
-                    b.Property<string>("wake_word")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)")
-                        .HasDefaultValue("asistan")
-                        .HasColumnName("wake_word");
 
                     b.HasKey("id");
 

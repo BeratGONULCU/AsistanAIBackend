@@ -24,7 +24,7 @@ public class AppDbContext : DbContext , IApplicationDbContext
     public DbSet<TetikleyiciKomut> TetikleyiciKomutlar => Set<TetikleyiciKomut>();
     public DbSet<EgitimDataset> EgitimDataset => Set<EgitimDataset>();
     public DbSet<AsistanYanit> AsistanYanit => Set<AsistanYanit>();
-
+    public DbSet<AsistanSettings> AsistanSettings => Set<AsistanSettings>();
     public DbSet<RedmineEgitimDataset> RedmineEgitimDataset => Set<RedmineEgitimDataset>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -134,16 +134,15 @@ public class AppDbContext : DbContext , IApplicationDbContext
             eb.HasKey(e => e.id);
 
             eb.Property(e => e.asistan_yanit)
-                .IsRequired(true)
+                .IsRequired()
                 .HasColumnName("asistan_yanit")
-                .HasMaxLength(1000);
+                .HasColumnType("text");
 
-            // ENUM CONFIGURATION
             eb.Property(e => e.yanitTuru)
-                .IsRequired(true)
-                .HasColumnName("yanit_turu") // DB'deki kolon adı 'yanit_turu' olacak
+                .IsRequired()
+                .HasColumnName("yanit_turu")
                 .HasMaxLength(50)
-                .HasConversion<string>(); // C#'taki enum'ı DB'ye string/varchar olarak kaydeder!
+                .HasConversion<string>();
 
             eb.Property(e => e.created_at)
                 .HasColumnName("created_at")
@@ -155,7 +154,7 @@ public class AppDbContext : DbContext , IApplicationDbContext
 
             eb.Property(e => e.SessionId)
                 .HasColumnName("session_id")
-                .IsRequired(true);
+                .IsRequired();
 
             eb.Property(e => e.feedback)
                 .HasColumnName("feedback")
@@ -251,6 +250,84 @@ public class AppDbContext : DbContext , IApplicationDbContext
                 .WithMany(c => c.RedmineEgitimDatasets)
                 .HasForeignKey(e => e.sesTetikleyici_id)
                 .OnDelete(DeleteBehavior.Cascade);
+        });
+        modelBuilder.Entity<AsistanSettings>(eb =>
+        {
+            eb.ToTable("asistan_settings");
+
+            eb.HasKey(e => e.id);
+
+            eb.Property(e => e.id)
+                .HasColumnName("id")
+                .ValueGeneratedOnAdd();
+
+            eb.Property(e => e.redmine_token)
+                .HasColumnName("redmine_token")
+                .IsRequired();
+
+            eb.Property(e => e.ai_provider)
+                .HasColumnName("active_provider")
+                .HasConversion<string>()
+                .HasMaxLength(50)
+                .HasDefaultValue(AiProvider.GEMINI)
+                .IsRequired();
+
+            eb.Property(e => e.gemini_api_key)
+                .HasColumnName("gemini_api_key")
+                .IsRequired(false);
+
+            eb.Property(e => e.gemini_model)
+                .HasColumnName("gemini_model")
+                .HasMaxLength(150)
+                .IsRequired(false);
+
+            eb.Property(e => e.openai_api_key)
+                .HasColumnName("openai_api_key")
+                .IsRequired(false);
+
+            eb.Property(e => e.openai_model)
+                .HasColumnName("openai_model")
+                .HasMaxLength(150)
+                .IsRequired(false);
+
+            eb.Property(e => e.ai_fallback_provider)
+                .HasColumnName("ai_fallback_provider")
+                .HasMaxLength(100)
+                .HasDefaultValue("ollama")
+                .IsRequired(true);
+
+            eb.Property(e => e.wake_word)
+                .HasColumnName("wake_word")
+                .HasMaxLength(100)
+                .HasDefaultValue("asistan")
+                .IsRequired(true);
+
+            eb.Property(e => e.dead_word)
+                .HasColumnName("dead_word")
+                .HasMaxLength(100)
+                .HasDefaultValue("kapat")
+                .IsRequired(true);
+
+            eb.Property(e => e.voice_input_enabled)
+                .HasColumnName("voice_input_enabled")
+                .HasColumnType("boolean")
+                .HasDefaultValue(false)
+                .IsRequired(true);
+
+            eb.Property(e => e.created_at)
+                .HasColumnName("created_at")
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .IsRequired();
+
+            eb.Property(e => e.ollama_model)
+                .HasColumnName("ollama_model")
+                .HasDefaultValue("llama3.1:8b")
+                .IsRequired(false);
+
+            eb.Property(e => e.updated_at)
+                .HasColumnName("updated_at")
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .IsRequired();
         });
 
         base.OnModelCreating(modelBuilder);

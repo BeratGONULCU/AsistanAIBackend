@@ -17,6 +17,7 @@ public interface IApplicationDbContext
     DbSet<Domain.Entities.EgitimDataset> EgitimDataset { get; }
     DbSet<RedmineEgitimDataset> RedmineEgitimDataset { get; }
     DbSet<AsistanYanit> AsistanYanit { get; }
+    DbSet<AsistanSettings> AsistanSettings { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }
