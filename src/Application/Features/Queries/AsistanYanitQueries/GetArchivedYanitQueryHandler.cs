@@ -37,7 +37,7 @@ public sealed class GetArchivedYanitQueryHandler : IRequestHandler<GetArchivedYa
                 CreatedAt = x.created_at,
                 UpdatedAt = x.updated_at,
                 KomutId = x.cihaz_komut_id,
-                JsonData = x.JsonData
+                //JsonData = x.JsonData
             })
             .ToList();
 
