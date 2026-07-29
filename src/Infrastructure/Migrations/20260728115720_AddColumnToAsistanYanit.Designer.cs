@@ -4,6 +4,7 @@ using System.Text.Json;
 using GeminiAsistanBackend.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -12,9 +13,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace GeminiAsistanBackend.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260728115720_AddColumnToAsistanYanit")]
+    partial class AddColumnToAsistanYanit
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -128,24 +131,6 @@ namespace GeminiAsistanBackend.Infrastructure.Migrations
                         .HasColumnType("character varying(100)")
                         .HasDefaultValue("kapat")
                         .HasColumnName("dead_word");
-
-                    b.Property<string>("deepseek_api_key")
-                        .HasColumnType("text")
-                        .HasColumnName("deepseek_api_key");
-
-                    b.Property<string>("deepseek_base_url")
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)")
-                        .HasDefaultValue("https://api.deepseek.com")
-                        .HasColumnName("deepseek_base_url");
-
-                    b.Property<string>("deepseek_model")
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(150)
-                        .HasColumnType("character varying(150)")
-                        .HasDefaultValue("deepseek-v4-flash")
-                        .HasColumnName("deepseek_model");
 
                     b.Property<string>("gemini_api_key")
                         .HasColumnType("text")

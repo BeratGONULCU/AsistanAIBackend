@@ -18,6 +18,9 @@ public interface IApplicationDbContext
     DbSet<RedmineEgitimDataset> RedmineEgitimDataset { get; }
     DbSet<AsistanYanit> AsistanYanit { get; }
     DbSet<AsistanSettings> AsistanSettings { get; }
+    DbSet<AsistanYanitDeleted> AsistanYanitDeleteds { get; }
+    DbSet<AsistanYanitArchived> asistanYanitArchiveds { get; }
+
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

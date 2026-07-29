@@ -12,5 +12,6 @@ public enum AiProvider
 	LLAMA,
 	OLLAMA,
 	OPENAI,
+	DEEPSEEK
 }
 

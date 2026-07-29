@@ -1,12 +1,5 @@
 ﻿using GeminiAsistanBackend.Application.DTOs.AsistanSettings;
 using MediatR;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace GeminiAsistanBackend.Application.Features.Commands.AsistanSettings;
 
 public sealed record CreateAssistanSettingsCommand(
     string redmineToken,
@@ -15,11 +8,12 @@ public sealed record CreateAssistanSettingsCommand(
     string? geminiModel,
     string? openAiApiKey,
     string? openAiModel,
+    string? deepseekApiKey,
+    string? deepseekModel,
+    string? deepseekBaseUrl,
     string aiFallbackProvider,
     string wakeWord,
     string deadWord,
     string? ollamaModel,
-    Boolean voiceInputEnabled
-    ) : IRequest<AsistanSettingsResponse>;
-
-
+    bool voiceInputEnabled
+) : IRequest<AsistanSettingsResponse>;

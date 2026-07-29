@@ -18,9 +18,10 @@ public class AsistanYanit
     public DateTime updated_at { get; set; } = DateTime.UtcNow;
     public int SessionId { get; set; }
     public string? feedback {  get; set; }
-
+    public string? KullaniciGeriBildirimi { get; set; }
     public int? cihaz_komut_id {  get; set; }
     public CihazKomutu cihazkomutu { get; set; } = null!;
+    public bool IsArchived { get; set; } = false;
 
     // burada get gibi işlemlerde gelen json değeri kaydetmek için kullanılacak.
     [Column(TypeName = "jsonb")]

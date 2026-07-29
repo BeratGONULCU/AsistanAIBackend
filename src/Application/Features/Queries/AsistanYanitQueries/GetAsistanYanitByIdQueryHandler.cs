@@ -49,8 +49,12 @@ public sealed class GetAsistanYanitByIdQueryHandler : IRequestHandler<GetAsistan
             Id = entities.id,
             AsistanYanit = entities.asistan_yanit,
             YanitTuru = yanitTuruEnum,
-            SessionID = entities.SessionId, 
-            feedback = entities.feedback,
+            SessionId = entities.SessionId,
+            RawResponse = entities.JsonData.HasValue ? entities.JsonData.Value.GetRawText() : null,
+            Feedback = entities.feedback,
+            KullaniciGeriBildirimi = entities.KullaniciGeriBildirimi,
+            CreatedAt = entities.created_at,
+            UpdatedAt = entities.updated_at,
             KomutId = entities.cihaz_komut_id,
             JsonData = entities.JsonData
         };

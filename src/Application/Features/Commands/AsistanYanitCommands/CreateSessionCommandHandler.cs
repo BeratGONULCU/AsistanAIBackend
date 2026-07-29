@@ -4,9 +4,7 @@ using GeminiAsistanBackend.Domain.Entities;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace GeminiAsistanBackend.Application.Features.Commands.AsistanYanitCommands;
@@ -20,45 +18,38 @@ public sealed class CreateSessionCommandHandler : IRequestHandler<CreateSessionC
         _context = context;
     }
 
-    public async Task<AsistanSendResponse> Handle(CreateSessionCommand request,CancellationToken cancellationToken)
+    public async Task<AsistanSendResponse> Handle(CreateSessionCommand request, CancellationToken cancellationToken)
     {
-        var asistanYanit = request.asistan_yanit.Trim() ?? throw new ArgumentException(nameof(request.asistan_yanit));
-        var YanitTuru = request.yanit_turu;
+        var asistanYanit = request.asistan_yanit?.Trim() ?? throw new ArgumentNullException(nameof(request.asistan_yanit));
+        var yanitTuru = request.yanit_turu;
 
-        /*
-         * bu kısım çalışmıyordu
-         
-        int lastSessionID = await _context.AsistanYanit
-            .Select(x => x.SessionId)
-            .DefaultIfEmpty(0)
-            .MaxAsync(cancellationToken);
-        */
-
+        // Son SessionId bulma mantığınız gayet başarılı ve performanslı
         int lastSessionID = (await _context.AsistanYanit.MaxAsync(x => (int?)x.SessionId, cancellationToken)) ?? 0;
-
         int newSessionID = lastSessionID + 1;
 
         var entities = new AsistanYanit
         {
             asistan_yanit = asistanYanit,
-            yanitTuru = YanitTuru,
+            yanitTuru = yanitTuru,
             SessionId = newSessionID,
         };
 
-        await _context.AsistanYanit.AddAsync(entities);
-        await _context.SaveChangesAsync();
+        await _context.AsistanYanit.AddAsync(entities, cancellationToken);
+        await _context.SaveChangesAsync(cancellationToken);
 
         return new AsistanSendResponse
         {
             Id = entities.id,
             AsistanYanit = asistanYanit,
-            YanitTuru = YanitTuru,
-            SessionID = entities.SessionId,
-            feedback = entities.feedback,
+            YanitTuru = yanitTuru,
+            SessionId = entities.SessionId,
+            RawResponse = entities.JsonData.HasValue ? entities.JsonData.Value.GetRawText() : null,
+            Feedback = entities.feedback,
+            KullaniciGeriBildirimi = entities.KullaniciGeriBildirimi,
             CreatedAt = entities.created_at,
             UpdatedAt = entities.updated_at,
-            KomutId = entities.cihaz_komut_id
+            KomutId = entities.cihaz_komut_id,
+            JsonData = entities.JsonData
         };
     }
-
 }

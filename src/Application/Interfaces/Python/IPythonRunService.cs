@@ -10,4 +10,5 @@ public interface IPythonRunService
 {
     //Task<string> RunMainScriptAsync(string arguments = "");
     Task<string> RunPythonMainScriptAsync();
+    Task<string> StopPythonMainScriptAsync();
 }

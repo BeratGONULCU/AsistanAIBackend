@@ -24,6 +24,9 @@ public class AsistanSettings
     public string dead_word { get; set; }
     public bool voice_input_enabled { get; set; } = false;
     public string? ollama_model { get; set; }
+    public string? deepseek_api_key { get; set; }
+    public string? deepseek_model   { get; set; }
+    public string? deepseek_base_url { get; set; }
     public DateTime created_at { get; set; }
     public DateTime updated_at { get; set; }
 }

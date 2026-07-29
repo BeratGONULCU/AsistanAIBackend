@@ -14,6 +14,10 @@ public class AsistanSettingsRequest
     public string? geminiModel { get; set; }
     public string? openAiApiKey { get; set; }
     public string? openAiModel { get; set; }
+    public string? DeepseekApiKey { get; set; }
+    public string? DeepseekModel { get; set; }
+    public string? DeepseekBaseUrl { get; set; }
+
     public string aiFallbackProvider { get; set; } = "ollama";
     public string wakeWord { get; set; } = "asistan";
     public string deadWord { get; set; } = "kapat";

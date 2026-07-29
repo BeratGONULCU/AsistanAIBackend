@@ -30,6 +30,20 @@ public class PythonController : ControllerBase
         }
     }
 
+    [HttpPost("stop-python")]
+    public async Task<ActionResult> StopPython()
+    {
+        try
+        {
+            var result = await _pythonRunService.StopPythonMainScriptAsync();
+            return Ok(new { output = result });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+    }
+
     [HttpPost("send")]
     public async Task<ActionResult<AsistanChatResponse>> Send(
         [FromBody] AsistanChatRequest request,

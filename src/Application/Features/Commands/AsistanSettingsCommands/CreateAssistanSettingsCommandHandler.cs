@@ -65,6 +65,10 @@ public sealed class CreateAssistanSettingsCommandHandler : IRequestHandler<Creat
                 // Llama mantığı
                 break;
 
+            case AiProvider.DEEPSEEK:
+                activeProvider = AiProvider.DEEPSEEK;
+                break;
+
             default:
                 throw new ArgumentOutOfRangeException();
         }
@@ -76,6 +80,9 @@ public sealed class CreateAssistanSettingsCommandHandler : IRequestHandler<Creat
             gemini_api_key = request.geminiApiKey,
             gemini_model = request.geminiModel,
             openai_model = request.openAiModel,
+            deepseek_api_key = request.deepseekApiKey,
+            deepseek_model = request.deepseekModel,
+            deepseek_base_url = request.deepseekBaseUrl,
             ai_fallback_provider = aiFallbackProvider,
             wake_word = request.wakeWord,
             dead_word = request.deadWord,
@@ -96,10 +103,13 @@ public sealed class CreateAssistanSettingsCommandHandler : IRequestHandler<Creat
             OpenAiApiKey = entities.openai_api_key,
             OpenAiModel = entities.openai_model,
             AiFallbackProvider = aiFallbackProvider,
-            wakeWord = entities.wake_word,
-            deadWord = entities.dead_word,
-            ollamaModel = entities.ollama_model,
-            voiceInputEnabled = entities.voice_input_enabled,
+            DeepseekApiKey = entities.deepseek_api_key,
+            DeepseekModel = entities.deepseek_model,
+            DeepseekBaseUrl = entities.deepseek_base_url,
+            WakeWord = entities.wake_word,
+            DeadWord = entities.dead_word,
+            OllamaModel = entities.ollama_model,
+            VoiceInputEnabled = entities.voice_input_enabled,
             CreatedAt = entities.created_at,
             UpdatedAt = entities.updated_at,
         };

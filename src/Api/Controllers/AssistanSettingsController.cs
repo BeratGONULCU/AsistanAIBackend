@@ -58,13 +58,18 @@ public class AssistanSettingsController : ControllerBase
                 request.geminiModel,
                 request.openAiApiKey,
                 request.openAiModel,
+                request.DeepseekApiKey,
+                request.DeepseekModel,
+                request.DeepseekBaseUrl,
                 request.aiFallbackProvider,
                 request.wakeWord,
                 request.deadWord,
                 request.ollamaModel,
                 request.voiceInputEnabled
-            );
+            )
+            {
 
+            };
             var updateResult = await _mediator.Send(updateCommand, cancellationToken);
             return Ok(updateResult); // Güncellenmiş veriyi döndür
         }
@@ -77,6 +82,9 @@ public class AssistanSettingsController : ControllerBase
             request.geminiModel,
             request.openAiApiKey,
             request.openAiModel,
+            request.DeepseekApiKey,
+            request.DeepseekModel,
+            request.DeepseekBaseUrl,
             request.aiFallbackProvider,
             request.wakeWord,
             request.deadWord,
