@@ -34,8 +34,11 @@ public sealed class UpdateAsistanSettingsCommandHandler : IRequestHandler<Update
         asistan.ai_provider = request.activeProvider;
         asistan.gemini_api_key = request.geminiApiKey;
         asistan.gemini_model = request.geminiModel;
-        asistan.openai_api_key = request.openAiApikey;
+        asistan.openai_api_key = request.openAiApiKey;
         asistan.openai_model = request.openAiModel;
+        asistan.deepseek_api_key = request.deepseekApiKey;
+        asistan.deepseek_model = request.deepseekModel;
+        asistan.deepseek_base_url = request.deepseekBaseUrl;
         asistan.ai_fallback_provider = request.aiFallbackProvider;
         asistan.wake_word = request.wakeWord;
         asistan.dead_word = request.deadWord;
@@ -56,10 +59,13 @@ public sealed class UpdateAsistanSettingsCommandHandler : IRequestHandler<Update
             AiFallbackProvider = asistan.ai_fallback_provider,
             CreatedAt = asistan.created_at,
             UpdatedAt = asistan.updated_at,
-            wakeWord = asistan.wake_word,
-            deadWord = asistan.dead_word,
-            ollamaModel = asistan.ollama_model,
-            voiceInputEnabled = asistan.voice_input_enabled,
+            DeepseekApiKey = asistan.deepseek_api_key,
+            DeepseekModel = asistan.deepseek_model,
+            DeepseekBaseUrl = asistan.deepseek_base_url,
+            WakeWord = asistan.wake_word,
+            DeadWord = asistan.dead_word,
+            OllamaModel = asistan.ollama_model,
+            VoiceInputEnabled = asistan.voice_input_enabled,
         };
     }
 

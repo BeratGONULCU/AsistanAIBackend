@@ -1,4 +1,5 @@
 ﻿namespace GeminiAsistanBackend.Api.Controllers;
+
 using Microsoft.AspNetCore.Mvc;
 using MediatR;
 using GeminiAsistanBackend.Application.Features.Commands.AsistanYanitCommands;
@@ -9,6 +10,8 @@ using GeminiAsistanBackend.Application.Features.Queries.AsistanYanitQueries;
 using GeminiAsistanBackend.Application.Features.Commands.EgitimDataSet;
 using GeminiAsistanBackend.Application.Features.Commands.RedmineEgitimdatasetCommands;
 using GeminiAsistanBackend.Application.Features.Commands.SesTetikleyiciKomutCommands;
+using GeminiAsistanBackend.Infrastructure;
+using Microsoft.EntityFrameworkCore;
 using GeminiAsistanBackend.Domain.Enums;
 using System.Text.Json;
 
@@ -17,56 +20,30 @@ using System.Text.Json;
 public class AsistanYanitController : ControllerBase
 {
     private readonly IMediator _mediator;
-        
-    public AsistanYanitController(IMediator mediator)
+    private readonly AppDbContext _dbContext;
+
+    public AsistanYanitController(
+        IMediator mediator,
+        AppDbContext dbContext)
     {
         _mediator = mediator;
+        _dbContext = dbContext;
     }
 
     // python içerisinden gelecek yanıt için - python gelen her metin için
     [HttpPost("send-asistan-yanit")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(bool))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<AsistanSendResponse>> SendYanit([FromBody] AsistanSendRequest request , CancellationToken cancellationToken)
+    public async Task<ActionResult<AsistanSendResponse>> SendYanit([FromBody] AsistanSendRequest request, CancellationToken cancellationToken)
     {
         // Eğer gelen veri boşluk veya boş string ise null'a çek
-        string? temizFeedback = string.IsNullOrWhiteSpace(request.feedback) ? null : request.feedback;
-        // nullable
+        string? temizFeedback = string.IsNullOrWhiteSpace(request.Feedback) ? null : request.Feedback;
         int? komut_id = request.KomutId <= 0 ? null : request.KomutId;
         AsistanYanitTuru yanitTuru = Domain.Enums.AsistanYanitTuru.YANIT;
 
-        // burada session belirtip göndermek gerek
         var command = new CreateAsistanYanitCommand(
             request.AsistanYanit,
-            yanitTuru, // burada default YANIT verecek
-            komut_id,
-            request.RawResponse, // --> burası db içerisinde yok response da var
-            request.SessionId,
-            temizFeedback,
-            request.JsonData
-        );
-        
-        var result = await _mediator.Send(command,cancellationToken);
-
-        return Ok(result);
-    }
-
-    // her girilen komut için - ilk komut hariç
-    [HttpPost("send-asistan-komut")]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(bool))]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<AsistanSendResponse>> SendKomut([FromBody] AsistanSendRequest request, CancellationToken cancellationToken)
-    {
-        // Eğer gelen veri boşluk veya boş string ise null'a çek
-        string? temizFeedback = string.IsNullOrWhiteSpace(request.feedback) ? null : request.feedback;
-        // nullable
-        int? komut_id = request.KomutId <= 0 ? null : request.KomutId;
-        AsistanYanitTuru yanitTuru = Domain.Enums.AsistanYanitTuru.KOMUT;
-
-        // burada session belirtip göndermek gerek
-        var command = new CreateAsistanYanitCommand(
-            request.AsistanYanit,
-            yanitTuru, // burada default YANIT verecek
+            yanitTuru,
             komut_id,
             request.RawResponse,
             request.SessionId,
@@ -79,23 +56,43 @@ public class AsistanYanitController : ControllerBase
         return Ok(result);
     }
 
-
     // her girilen komut için - ilk komut hariç
+    [HttpPost("send-asistan-komut")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(bool))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<AsistanSendResponse>> SendKomut([FromBody] AsistanSendRequest request, CancellationToken cancellationToken)
+    {
+        string? temizFeedback = string.IsNullOrWhiteSpace(request.Feedback) ? null : request.Feedback;
+        int? komut_id = request.KomutId <= 0 ? null : request.KomutId;
+        AsistanYanitTuru yanitTuru = Domain.Enums.AsistanYanitTuru.KOMUT;
+
+        var command = new CreateAsistanYanitCommand(
+            request.AsistanYanit,
+            yanitTuru,
+            komut_id,
+            request.RawResponse,
+            request.SessionId,
+            temizFeedback,
+            request.JsonData
+        );
+
+        var result = await _mediator.Send(command, cancellationToken);
+
+        return Ok(result);
+    }
+
     [HttpPost("send-asistan-onay")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(bool))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<AsistanSendResponse>> SendOnay([FromBody] AsistanSendRequest request, CancellationToken cancellationToken)
     {
-        // Eğer gelen veri boşluk veya boş string ise null'a çek
-        string? temizFeedback = string.IsNullOrWhiteSpace(request.feedback) ? null : request.feedback;
-        // nullable
+        string? temizFeedback = string.IsNullOrWhiteSpace(request.Feedback) ? null : request.Feedback;
         int? komut_id = request.KomutId <= 0 ? null : request.KomutId;
         AsistanYanitTuru yanitTuru = Domain.Enums.AsistanYanitTuru.ONAY;
 
-        // burada session belirtip göndermek gerek
         var command = new CreateAsistanYanitCommand(
             request.AsistanYanit,
-            yanitTuru, // burada default YANIT verecek
+            yanitTuru,
             komut_id,
             request.RawResponse,
             request.SessionId,
@@ -120,16 +117,13 @@ public class AsistanYanitController : ControllerBase
         if (normalizedAnswer is not ("evet" or "hayır" or "hayir"))
             return BadRequest("Onay yanıtı yalnızca 'evet' veya 'hayır' olabilir.");
 
-        // Eğer gelen veri boşluk veya boş string ise null'a çek
-        string? temizFeedback = string.IsNullOrWhiteSpace(request.feedback) ? null : request.feedback;
-        // nullable
+        string? temizFeedback = string.IsNullOrWhiteSpace(request.Feedback) ? null : request.Feedback;
         int? komut_id = request.KomutId <= 0 ? null : request.KomutId;
         AsistanYanitTuru yanitTuru = Domain.Enums.AsistanYanitTuru.ONAYYANIT;
 
-        // burada session belirtip göndermek gerek
         var command = new CreateAsistanYanitCommand(
             request.AsistanYanit,
-            yanitTuru, // burada default YANIT verecek
+            yanitTuru,
             komut_id,
             request.RawResponse,
             request.SessionId,
@@ -238,6 +232,14 @@ public class AsistanYanitController : ControllerBase
             : null;
     }
 
+    [HttpPost("delete-by-sessionID")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(bool))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<bool>> DeleteBySessionID([FromBody] DeleteSessionCommand command, CancellationToken cancellationToken)
+    {
+        var result = await _mediator.Send(command, cancellationToken);
+        return Ok(result);
+    }
 
     // girilen komut algılanmadıysa gelecek kısım
     [HttpPost("send-asistan-feedback-error")]
@@ -245,16 +247,13 @@ public class AsistanYanitController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<AsistanSendResponse>> SendFeedbackError([FromBody] AsistanSendRequest request, CancellationToken cancellationToken)
     {
-        // Eğer gelen veri boşluk veya boş string ise null'a çek
-        string? temizFeedback = string.IsNullOrWhiteSpace(request.feedback) ? null : request.feedback;
-        // nullable
+        string? temizFeedback = string.IsNullOrWhiteSpace(request.Feedback) ? null : request.Feedback;
         int? komut_id = request.KomutId <= 0 ? null : request.KomutId;
         AsistanYanitTuru yanitTuru = Domain.Enums.AsistanYanitTuru.FEEDBACKHATA;
 
-        // burada session belirtip göndermek gerek
         var command = new CreateAsistanYanitCommand(
             request.AsistanYanit,
-            yanitTuru, // burada default YANIT verecek
+            yanitTuru,
             komut_id,
             request.RawResponse,
             request.SessionId,
@@ -267,25 +266,21 @@ public class AsistanYanitController : ControllerBase
         return Ok(result);
     }
 
-
     [HttpPatch("update-asistanyanit/{id}")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(bool))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<AsistanSendResponse>> UpdateYanit(
         [FromRoute] int id,
-        [FromBody] UpdateAsistanYanitRequest request, // <-- Yukarıdaki using sayesinde namespace'i kısalttık
+        [FromBody] UpdateAsistanYanitRequest request,
         CancellationToken cancellationToken)
     {
-        // Yarım kalan noktayı düzelttik ve DTO'dan gelen değeri eşitledik
         AsistanYanitTuru yanitTuru = request.yanitTuru;
 
-        // CQRS/MediatR komutunu oluşturup gönderiyoruz
         var command = new UpdateAsistanYanitCommand(id, yanitTuru);
         var result = await _mediator.Send(command, cancellationToken);
 
         return Ok(result);
     }
-
 
     // python içerisinden gelecek yanıt için - python gelen her metin için
     [HttpPost("send-asistan-aciklama")]
@@ -293,16 +288,13 @@ public class AsistanYanitController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<AsistanSendResponse>> SendAciklama([FromBody] AsistanSendRequest request, CancellationToken cancellationToken)
     {
-        // Eğer gelen veri boşluk veya boş string ise null'a çek
-        string? temizFeedback = string.IsNullOrWhiteSpace(request.feedback) ? null : request.feedback;
-        // nullable
+        string? temizFeedback = string.IsNullOrWhiteSpace(request.Feedback) ? null : request.Feedback;
         int? komut_id = request.KomutId <= 0 ? null : request.KomutId;
         AsistanYanitTuru yanitTuru = Domain.Enums.AsistanYanitTuru.ACIKLAMA;
 
-        // burada session belirtip göndermek gerek
         var command = new CreateAsistanYanitCommand(
             request.AsistanYanit,
-            yanitTuru, // burada default YANIT verecek
+            yanitTuru,
             komut_id,
             request.RawResponse,
             request.SessionId,
@@ -315,11 +307,103 @@ public class AsistanYanitController : ControllerBase
         return Ok(result);
     }
 
-    // bu sohbetteki ilk komut için çalışacak - sadece ilk komutta
-    [HttpPost("create-sessionID")]
-    [ProducesResponseType(StatusCodes.Status200OK, Type =typeof(bool))]
+    [HttpPatch("archive-session/{sessionId:int}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<AsistanSendResponse>> CreateSessionID([FromBody] createAsistanSessionRequest request,CancellationToken cancellationToken)
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult> ArchiveSession(
+    [FromRoute] int sessionId,
+    CancellationToken cancellationToken)
+    {
+        if (sessionId <= 0)
+        {
+            return BadRequest(new
+            {
+                ok = false,
+                message = "Geçerli bir session ID gönderilmelidir."
+            });
+        }
+
+        var affectedRows = await _dbContext.AsistanYanit
+            .Where(x => x.SessionId == sessionId)
+            .ExecuteUpdateAsync(
+                setters => setters
+                    .SetProperty(x => x.IsArchived, true)
+                    .SetProperty(x => x.updated_at, DateTime.UtcNow),
+                cancellationToken
+            );
+
+        if (affectedRows == 0)
+        {
+            return NotFound(new
+            {
+                ok = false,
+                sessionId,
+                message = "Bu session ID ile sohbet bulunamadı."
+            });
+        }
+
+        return Ok(new
+        {
+            ok = true,
+            sessionId,
+            affectedRows,
+            message = "Sohbet arşivlendi."
+        });
+    }
+
+    [HttpPatch("unarchive-session/{sessionId:int}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult> UnarchiveSession(
+    [FromRoute] int sessionId,
+    CancellationToken cancellationToken)
+    {
+        if (sessionId <= 0)
+        {
+            return BadRequest(new
+            {
+                ok = false,
+                message = "Geçerli bir session ID gönderilmelidir."
+            });
+        }
+
+        var affectedRows = await _dbContext.AsistanYanit
+            .Where(x =>
+                x.SessionId == sessionId &&
+                x.IsArchived)
+            .ExecuteUpdateAsync(
+                setters => setters
+                    .SetProperty(x => x.IsArchived, false)
+                    .SetProperty(x => x.updated_at, DateTime.UtcNow),
+                cancellationToken
+            );
+
+        if (affectedRows == 0)
+        {
+            return NotFound(new
+            {
+                ok = false,
+                sessionId,
+                message =
+                    "Arşivlenmiş sohbet bulunamadı."
+            });
+        }
+
+        return Ok(new
+        {
+            ok = true,
+            sessionId,
+            affectedRows,
+            message = "Sohbet arşivden kaldırıldı."
+        });
+    }
+
+    [HttpPost("create-sessionID")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(bool))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<AsistanSendResponse>> CreateSessionID([FromBody] createAsistanSessionRequest request, CancellationToken cancellationToken)
     {
         var command = new CreateSessionCommand(
             request.AsistanYanit,
@@ -332,7 +416,6 @@ public class AsistanYanitController : ControllerBase
     }
 
     [HttpGet("Get-All")]
-    //public async Task<ActionResult<List<EgitimDatasetResponse>>> GetAllAsistanYanit(CancellationToken cancellationToken)
     public async Task<ActionResult<List<AsistanSendResponse>>> GetAllAsistanYanit(CancellationToken cancellationToken)
     {
         var result = await _mediator.Send(new GetAsistanYanitQuery(), cancellationToken);
@@ -345,10 +428,8 @@ public class AsistanYanitController : ControllerBase
         return Ok(result);
     }
 
-
-    // burada sessionID ile getirilecek.
     [HttpGet("Get-BySession-ID")]
-    public async Task<ActionResult<List<EgitimDatasetResponse>>> GetBySessionID(int sessionID , CancellationToken cancellationToken)
+    public async Task<ActionResult<List<EgitimDatasetResponse>>> GetBySessionID(int sessionID, CancellationToken cancellationToken)
     {
         var resultSohbet = await _mediator.Send(new GetSohbetBySessionIDQuery(sessionID), cancellationToken);
 
@@ -360,4 +441,16 @@ public class AsistanYanitController : ControllerBase
         return Ok(resultSohbet);
     }
 
+    [HttpGet("Get-Archived-Sohbet")]
+    public async Task<ActionResult<List<AsistanSendResponse>>> GetArchivedSohbetler(CancellationToken cancellationToken)
+    {
+        var result = await _mediator.Send(new GetArchivedYanitQuery(), cancellationToken);
+
+        if (result == null)
+        {
+            return BadRequest("arşivlenmiş sohbet yoktur");
+        }
+
+        return Ok(result);
+    }
 }

@@ -49,6 +49,17 @@ public sealed class SystemController(IOllamaStatusService ollamaStatusService) :
         }
     }
 
+    [HttpGet("backend-status")]
+    public ActionResult BackendStatus()
+    {
+        return Ok(new
+        {
+            running = true,
+            message = "Backend çalışıyor.",
+            checkedAt = DateTimeOffset.UtcNow
+        });
+    }
+
     [HttpGet("check-ollama")]
     public async Task<IActionResult> CheckOllama()
     {

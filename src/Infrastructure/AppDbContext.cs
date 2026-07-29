@@ -26,6 +26,8 @@ public class AppDbContext : DbContext , IApplicationDbContext
     public DbSet<AsistanYanit> AsistanYanit => Set<AsistanYanit>();
     public DbSet<AsistanSettings> AsistanSettings => Set<AsistanSettings>();
     public DbSet<RedmineEgitimDataset> RedmineEgitimDataset => Set<RedmineEgitimDataset>();
+    public DbSet<AsistanYanitDeleted> AsistanYanitDeleteds => Set<AsistanYanitDeleted>();
+    public DbSet<AsistanYanitArchived> asistanYanitArchiveds => Set<AsistanYanitArchived>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -37,6 +39,9 @@ public class AppDbContext : DbContext , IApplicationDbContext
         modelBuilder.Entity<EgitimDataset>().ToTable("egitim_dataset");
         modelBuilder.Entity<RedmineEgitimDataset>().ToTable("redmine_egitim_dataset");
         modelBuilder.Entity<AsistanYanit>().ToTable("asistan_yanit");
+        modelBuilder.Entity<AsistanSettings>().ToTable("asistan_settings");
+        modelBuilder.Entity<AsistanYanitDeleted>().ToTable("asistan_yanit_deleted");
+        modelBuilder.Entity<AsistanYanitArchived>().ToTable("asistan_yanit_archived");
 
         // CihazKomutu
         modelBuilder.Entity<CihazKomutu>(eb =>
@@ -156,6 +161,12 @@ public class AppDbContext : DbContext , IApplicationDbContext
                 .HasColumnName("session_id")
                 .IsRequired();
 
+            eb.Property(e => e.KullaniciGeriBildirimi)
+                .HasColumnName("kullanici_geri_bildirimi")
+                .HasColumnType("varchar(255)")
+                .HasMaxLength(255)
+                .IsRequired(false);
+
             eb.Property(e => e.feedback)
                 .HasColumnName("feedback")
                 .HasColumnType("varchar(255)")
@@ -170,9 +181,159 @@ public class AppDbContext : DbContext , IApplicationDbContext
                 .HasColumnType("jsonb")
                 .IsRequired(false);
 
+            eb.Property(e => e.IsArchived)
+                .HasColumnName("is_archived")
+                .HasColumnType("boolean")
+                .HasDefaultValue(false)
+                .IsRequired();
+
             eb.HasOne(e => e.cihazkomutu)
                 .WithMany(c => c.AsistanYanitlar)
                 .HasForeignKey(e => e.cihaz_komut_id)
+                .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        // AsistanYanitDeleted
+        modelBuilder.Entity<AsistanYanitDeleted>(eb =>
+        {
+            eb.ToTable("asistan_yanit_deleted");
+
+            eb.HasKey(e => e.Id);
+
+            eb.Property(e => e.Id)
+                .HasColumnName("id")
+                .ValueGeneratedOnAdd();
+
+            eb.Property(e => e.AsistanYanit)
+                .HasColumnName("asistan_yanit")
+                .HasColumnType("varchar(1000)")
+                .HasMaxLength(1000)
+                .IsRequired();
+
+            eb.Property(e => e.CreatedAt)
+                .HasColumnName("created_at")
+                .HasColumnType("timestamp with time zone")
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .IsRequired();
+
+            eb.Property(e => e.UpdatedAt)
+                .HasColumnName("updated_at")
+                .HasColumnType("timestamp with time zone")
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .IsRequired();
+
+            eb.Property(e => e.DeletedAt)
+                .HasColumnName("deleted_at")
+                .HasColumnType("timestamp with time zone")
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .IsRequired();
+
+            eb.Property(e => e.CihazKomutId)
+                .HasColumnName("cihaz_komut_id")
+                .IsRequired(false);
+
+            eb.Property(e => e.YanitTuru)
+                .HasColumnName("yanit_turu")
+                .HasColumnType("varchar(50)")
+                .HasMaxLength(50)
+                .HasDefaultValue(string.Empty)
+                .IsRequired();
+
+            eb.Property(e => e.KullaniciGeriBildirimi)
+                .HasColumnName("kullanici_geri_bildirimi")
+                .HasColumnType("varchar(255)")
+                .HasMaxLength(255)
+                .IsRequired(false);
+
+            eb.Property(e => e.SessionId)
+                .HasColumnName("session_id")
+                .IsRequired();
+
+            eb.Property(e => e.JsonData)
+                .HasColumnName("jsonData")
+                .HasColumnType("jsonb")
+                .IsRequired(false);
+
+            eb.HasIndex(e => e.CihazKomutId)
+                .HasDatabaseName(
+                    "IX_asistan_yanit_deleted_cihaz_komut_id"
+                );
+
+            eb.HasOne(e => e.CihazKomut)
+                .WithMany()
+                .HasForeignKey(e => e.CihazKomutId)
+                .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        modelBuilder.Entity<AsistanYanitArchived>(eb =>
+        {
+            eb.ToTable("asistan_yanit_archived");
+
+            eb.HasKey(e => e.Id);
+
+            eb.Property(e => e.Id)
+                .HasColumnName("id")
+                .ValueGeneratedOnAdd();
+
+            eb.Property(e => e.AsistanYanit)
+                .HasColumnName("asistan_yanit")
+                .HasColumnType("varchar(1000)")
+                .HasMaxLength(1000)
+                .IsRequired();
+
+            eb.Property(e => e.CreatedAt)
+                .HasColumnName("created_at")
+                .HasColumnType("timestamp with time zone")
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .IsRequired();
+
+            eb.Property(e => e.UpdatedAt)
+                .HasColumnName("updated_at")
+                .HasColumnType("timestamp with time zone")
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .IsRequired();
+
+            eb.Property(e => e.DeletedAt)
+                .HasColumnName("deleted_at")
+                .HasColumnType("timestamp with time zone")
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .IsRequired();
+
+            eb.Property(e => e.CihazKomutId)
+                .HasColumnName("cihaz_komut_id")
+                .IsRequired(false);
+
+            eb.Property(e => e.YanitTuru)
+                .HasColumnName("yanit_turu")
+                .HasColumnType("varchar(50)")
+                .HasMaxLength(50)
+                .HasDefaultValue(string.Empty)
+                .IsRequired();
+
+            eb.Property(e => e.KullaniciGeriBildirimi)
+                .HasColumnName("kullanici_geri_bildirimi")
+                .HasColumnType("varchar(255)")
+                .HasMaxLength(255)
+                .IsRequired(false);
+
+            eb.Property(e => e.SessionId)
+                .HasColumnName("session_id")
+                .HasColumnType("text")
+                .IsRequired();
+
+            eb.Property(e => e.JsonData)
+                .HasColumnName("jsonData")
+                .HasColumnType("jsonb")
+                .IsRequired(false);
+
+            eb.HasIndex(e => e.CihazKomutId)
+                .HasDatabaseName(
+                    "IX_asistan_yanit_archived_cihaz_komut_id"
+                );
+
+            eb.HasOne(e => e.CihazKomut)
+                .WithMany()
+                .HasForeignKey(e => e.CihazKomutId)
                 .OnDelete(DeleteBehavior.SetNull);
         });
 
@@ -322,6 +483,22 @@ public class AppDbContext : DbContext , IApplicationDbContext
             eb.Property(e => e.ollama_model)
                 .HasColumnName("ollama_model")
                 .HasDefaultValue("llama3.1:8b")
+                .IsRequired(false);
+
+            eb.Property(e => e.deepseek_api_key)
+                .HasColumnName("deepseek_api_key")
+                .IsRequired(false);
+
+            eb.Property(e => e.deepseek_model)
+                .HasColumnName("deepseek_model")
+                .HasMaxLength(150)
+                .HasDefaultValue("deepseek-v4-flash")
+                .IsRequired(false);
+
+            eb.Property(e => e.deepseek_base_url)
+                .HasColumnName("deepseek_base_url")
+                .HasMaxLength(255)
+                .HasDefaultValue("https://api.deepseek.com")
                 .IsRequired(false);
 
             eb.Property(e => e.updated_at)

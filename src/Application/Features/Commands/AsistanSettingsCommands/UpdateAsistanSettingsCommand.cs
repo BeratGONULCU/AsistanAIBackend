@@ -1,13 +1,6 @@
 ﻿using GeminiAsistanBackend.Application.DTOs.AsistanSettings;
 using GeminiAsistanBackend.Domain.Enums;
 using MediatR;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace GeminiAsistanBackend.Application.Features.Commands.AsistanSettings;
 
 public sealed record UpdateAsistanSettingsCommand(
     int id,
@@ -15,11 +8,14 @@ public sealed record UpdateAsistanSettingsCommand(
     AiProvider activeProvider,
     string? geminiApiKey,
     string? geminiModel,
-    string? openAiApikey,
+    string? openAiApiKey,
     string? openAiModel,
+    string? deepseekApiKey,
+    string? deepseekModel,
+    string? deepseekBaseUrl,
     string aiFallbackProvider,
     string wakeWord,
     string deadWord,
     string? ollamaModel,
-    Boolean voiceInputEnabled
-    ) : IRequest<AsistanSettingsResponse>;
+    bool voiceInputEnabled
+) : IRequest<AsistanSettingsResponse>;

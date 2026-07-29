@@ -1,4 +1,6 @@
-﻿using GeminiAsistanBackend.Application.DTOs.AsistanChat;
+﻿namespace GeminiAsistanBackend.Api.Controllers;
+
+using GeminiAsistanBackend.Application.DTOs.AsistanChat;
 using GeminiAsistanBackend.Application.Features.Commands.AsistanYanitCommands;
 using GeminiAsistanBackend.Application.Interfaces;
 using GeminiAsistanBackend.Application.Interfaces.Python;
@@ -10,8 +12,6 @@ using Microsoft.EntityFrameworkCore;
 using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
-
-namespace GeminiAsistanBackend.Api.Controllers;
 
 [ApiController]
 [Route("Api/[controller]")]
@@ -60,17 +60,12 @@ public class AsistanChatController : ControllerBase
         var message = request.Message.Trim();
         var sessionId = request.SessionId.GetValueOrDefault();
 
-        var yanitTuru =
-            request.asistanYanitTuru == AsistanYanitTuru.ACIKLAMA
-                ? AsistanYanitTuru.ACIKLAMA
-                : AsistanYanitTuru.KOMUT;
+        var yanitTuru = request.asistanYanitTuru;
 
         try
         {
             if (sessionId <= 0)
             {
-                // İlk mesajda yeni session oluşturulur
-                // ve ilk mesaj CreateSessionCommand tarafından kaydedilir.
                 var createdSession = await _mediator.Send(
                     new CreateSessionCommand(
                         message,
@@ -79,7 +74,8 @@ public class AsistanChatController : ControllerBase
                     cancellationToken
                 );
 
-                sessionId = createdSession.SessionID;
+                // CS1061 DÜZELTMESİ: SessionID -> SessionId yapıldı
+                sessionId = createdSession.SessionId;
 
                 if (sessionId <= 0)
                 {
@@ -90,7 +86,6 @@ public class AsistanChatController : ControllerBase
             }
             else
             {
-                // Session ID gerçekten mevcut mu?
                 var sessionExists = await _context.AsistanYanit
                     .AnyAsync(
                         x => x.SessionId == sessionId,
@@ -109,21 +104,23 @@ public class AsistanChatController : ControllerBase
                     });
                 }
 
-                // Sonraki mesaj mevcut session'a bir kez kaydedilir.
-                var command = new CreateAsistanYanitCommand(
-                    message,
-                    yanitTuru,
-                    null,
-                    null,
-                    sessionId,
-                    null,
-                    null
-                );
+                if (yanitTuru != AsistanYanitTuru.ONAYYANIT)
+                {
+                    var command = new CreateAsistanYanitCommand(
+                        message,
+                        yanitTuru,
+                        null,
+                        null,
+                        sessionId,
+                        null,
+                        null
+                    );
 
-                await _mediator.Send(
-                    command,
-                    cancellationToken
-                );
+                    await _mediator.Send(
+                        command,
+                        cancellationToken
+                    );
+                }
             }
         }
         catch (Exception ex)
@@ -149,8 +146,6 @@ public class AsistanChatController : ControllerBase
             asistanYanit = message,
             yanitTuru = yanitTuru.ToString(),
             sessionId,
-
-            // Python tekrar session veya kullanıcı mesajı kaydetmeyecek.
             saveToBackend = false
         };
 
@@ -193,7 +188,7 @@ public class AsistanChatController : ControllerBase
     {
         var script =
             @"$connections = Get-NetTCPConnection -LocalPort 8766 -State Listen -ErrorAction SilentlyContinue; " +
-            @"if (-not $connections) { Write-Output 'False' }  else { Write-Output 'True' }" ;
+            @"if (-not $connections) { Write-Output 'False' }  else { Write-Output 'True' }";
 
         var psi = new ProcessStartInfo
         {
@@ -210,11 +205,10 @@ public class AsistanChatController : ControllerBase
         if (process == null)
             return StatusCode(500, "PowerShell başlatılamadı.");
 
+        var output = await process.StandardOutput.ReadToEndAsync();
+        var error = await process.StandardError.ReadToEndAsync();
 
-        var output = process.StandardOutput.ReadToEnd();
-        var error = process.StandardError.ReadToEnd();
-
-        process.WaitForExit();
+        await process.WaitForExitAsync();
 
         if (process.ExitCode != 0)
             return StatusCode(500, error);
@@ -227,8 +221,6 @@ public class AsistanChatController : ControllerBase
         return true;
     }
 
-
-    // bu direkt python session kapatıyor, bunu ipt
     [HttpPost("cancelSession")]
     public async Task<IActionResult> cancelSession()
     {
@@ -254,11 +246,10 @@ public class AsistanChatController : ControllerBase
         if (process == null)
             return StatusCode(500, "PowerShell başlatılamadı.");
 
+        var output = await process.StandardOutput.ReadToEndAsync();
+        var error = await process.StandardError.ReadToEndAsync();
 
-        var output = process.StandardOutput.ReadToEnd();
-        var error = process.StandardError.ReadToEnd();
-
-        process.WaitForExit();
+        await process.WaitForExitAsync();
 
         if (process.ExitCode != 0)
             return StatusCode(500, error);
@@ -308,4 +299,3 @@ public class AsistanChatController : ControllerBase
         }
     }
 }
-

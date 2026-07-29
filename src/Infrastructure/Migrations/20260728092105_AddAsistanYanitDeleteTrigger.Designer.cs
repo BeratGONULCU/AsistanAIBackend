@@ -4,6 +4,7 @@ using System.Text.Json;
 using GeminiAsistanBackend.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -12,9 +13,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace GeminiAsistanBackend.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260728092105_AddAsistanYanitDeleteTrigger")]
+    partial class AddAsistanYanitDeleteTrigger
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -41,6 +44,9 @@ namespace GeminiAsistanBackend.Infrastructure.Migrations
                     b.Property<int?>("CihazKomutId")
                         .HasColumnType("integer")
                         .HasColumnName("cihaz_komut_id");
+
+                    b.Property<int?>("CihazKomutId1")
+                        .HasColumnType("integer");
 
                     b.Property<DateTimeOffset>("CreatedAt")
                         .ValueGeneratedOnAdd()
@@ -87,6 +93,8 @@ namespace GeminiAsistanBackend.Infrastructure.Migrations
                     b.HasIndex("CihazKomutId")
                         .HasDatabaseName("IX_asistan_yanit_deleted_cihaz_komut_id");
 
+                    b.HasIndex("CihazKomutId1");
+
                     b.ToTable("asistan_yanit_deleted", (string)null);
                 });
 
@@ -128,24 +136,6 @@ namespace GeminiAsistanBackend.Infrastructure.Migrations
                         .HasColumnType("character varying(100)")
                         .HasDefaultValue("kapat")
                         .HasColumnName("dead_word");
-
-                    b.Property<string>("deepseek_api_key")
-                        .HasColumnType("text")
-                        .HasColumnName("deepseek_api_key");
-
-                    b.Property<string>("deepseek_base_url")
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)")
-                        .HasDefaultValue("https://api.deepseek.com")
-                        .HasColumnName("deepseek_base_url");
-
-                    b.Property<string>("deepseek_model")
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(150)
-                        .HasColumnType("character varying(150)")
-                        .HasDefaultValue("deepseek-v4-flash")
-                        .HasColumnName("deepseek_model");
 
                     b.Property<string>("gemini_api_key")
                         .HasColumnType("text")
@@ -209,12 +199,6 @@ namespace GeminiAsistanBackend.Infrastructure.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("id"));
 
-                    b.Property<bool>("IsArchived")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(false)
-                        .HasColumnName("is_archived");
-
                     b.Property<JsonElement?>("JsonData")
                         .HasColumnType("jsonb")
                         .HasColumnName("JsonData");
@@ -264,73 +248,6 @@ namespace GeminiAsistanBackend.Infrastructure.Migrations
                     b.HasIndex("cihaz_komut_id");
 
                     b.ToTable("asistan_yanit", (string)null);
-                });
-
-            modelBuilder.Entity("GeminiAsistanBackend.Domain.Entities.AsistanYanitArchived", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasColumnName("id");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("AsistanYanit")
-                        .IsRequired()
-                        .HasMaxLength(1000)
-                        .HasColumnType("varchar(1000)")
-                        .HasColumnName("asistan_yanit");
-
-                    b.Property<int?>("CihazKomutId")
-                        .HasColumnType("integer")
-                        .HasColumnName("cihaz_komut_id");
-
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at")
-                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
-
-                    b.Property<DateTimeOffset>("DeletedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("deleted_at")
-                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
-
-                    b.Property<JsonDocument>("JsonData")
-                        .HasColumnType("jsonb")
-                        .HasColumnName("jsonData");
-
-                    b.Property<string>("KullaniciGeriBildirimi")
-                        .HasMaxLength(255)
-                        .HasColumnType("varchar(255)")
-                        .HasColumnName("kullanici_geri_bildirimi");
-
-                    b.Property<string>("SessionId")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("session_id");
-
-                    b.Property<DateTimeOffset>("UpdatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("updated_at")
-                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
-
-                    b.Property<string>("YanitTuru")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(50)
-                        .HasColumnType("varchar(50)")
-                        .HasDefaultValue("")
-                        .HasColumnName("yanit_turu");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CihazKomutId")
-                        .HasDatabaseName("IX_asistan_yanit_archived_cihaz_komut_id");
-
-                    b.ToTable("asistan_yanit_archived", (string)null);
                 });
 
             modelBuilder.Entity("GeminiAsistanBackend.Domain.Entities.CihazKomutu", b =>
@@ -540,10 +457,14 @@ namespace GeminiAsistanBackend.Infrastructure.Migrations
 
             modelBuilder.Entity("AsistanYanitDeleted", b =>
                 {
-                    b.HasOne("GeminiAsistanBackend.Domain.Entities.CihazKomutu", "CihazKomut")
+                    b.HasOne("GeminiAsistanBackend.Domain.Entities.CihazKomutu", null)
                         .WithMany()
                         .HasForeignKey("CihazKomutId")
                         .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("GeminiAsistanBackend.Domain.Entities.CihazKomutu", "CihazKomut")
+                        .WithMany()
+                        .HasForeignKey("CihazKomutId1");
 
                     b.Navigation("CihazKomut");
                 });
@@ -556,16 +477,6 @@ namespace GeminiAsistanBackend.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("cihazkomutu");
-                });
-
-            modelBuilder.Entity("GeminiAsistanBackend.Domain.Entities.AsistanYanitArchived", b =>
-                {
-                    b.HasOne("GeminiAsistanBackend.Domain.Entities.CihazKomutu", "CihazKomut")
-                        .WithMany()
-                        .HasForeignKey("CihazKomutId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.Navigation("CihazKomut");
                 });
 
             modelBuilder.Entity("GeminiAsistanBackend.Domain.Entities.EgitimDataset", b =>
