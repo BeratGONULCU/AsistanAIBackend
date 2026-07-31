@@ -380,6 +380,10 @@ namespace GeminiAsistanBackend.Infrastructure.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<int>("intent")
+                        .HasColumnType("integer")
+                        .HasColumnName("intent");
+
                     b.Property<int>("sesTetikleyici_id")
                         .HasColumnType("integer");
 
